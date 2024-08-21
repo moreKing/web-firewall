@@ -1,0 +1,20 @@
+{
+	"devDependencies": {
+		"commit-and-tag-version": "^12.4.1",
+		"cz-customizable": "^7.2.1",
+		"git-validator": "^0.20.0",
+		"commitizen": "^4.3.0"
+	},
+	"scripts": {
+		"release": "commit-and-tag-version",
+		"commit": "git add . && git cz",
+		"prepare": "git-validator install  --no-eslint",
+		"style": "git-validator",
+		"style:update": "git-validator -u"
+	},
+	"config": {
+		"commitizen": {
+			"path": "cz-customizable"
+		}
+	}
+}

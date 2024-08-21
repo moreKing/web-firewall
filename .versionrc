@@ -1,0 +1,54 @@
+{
+    "header": "# 更新日志 \n\n",
+    "releaseCount": 0,
+    "commitUrlFormat": "{{host}}/{{owner}}/{{repository}}/commit/{{hash}}",
+    "userUrlFormat": "{{host}}/{{user}}",
+    "types": [
+        {
+            "type": "feat",
+            "section": "✨ 新增特性"
+        },
+        {
+            "type": "fix",
+            "section": "🐞 Bug 修复"
+        },
+        {
+            "type": "perf",
+            "section": "⚡ 性能优化"
+        },
+        {
+            "type": "revert",
+            "section": "⏪ 代码回退"
+        },
+        {
+            "type": "chore",
+            "section": "📦  其他更新"
+        },
+        {
+            "type": "docs",
+            "section": "📝 文档更新"
+        },
+        {
+            "type": "style",
+            "section": "🎉 样式相关"
+        },
+        {
+            "type": "refactor",
+            "section": "♻ 代码重构"
+        },
+        {
+            "type": "test",
+            "section": "✅ 测试用例"
+        }
+    ],
+    "bumpFiles": [
+        {
+            "filename": "web/package.json",
+            "type": "json"
+        },
+        {
+            "filename": "package.json",
+            "type": "json"
+        }
+    ]
+}
