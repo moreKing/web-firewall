@@ -31,7 +31,6 @@ func (c *ControllerV1) GetHome(ctx context.Context, req *v1.GetHomeReq) (res *v1
 			Accounts:  0,
 			Yesterday: *global.GetYesterday(ctx),
 			Today:     *global.GetToday(ctx),
-			License:   0,
 		},
 	}, nil
 }
