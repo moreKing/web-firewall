@@ -1,0 +1,309 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { $t } from '@/locales';
+import { updateFirewallPolicy } from '@/service/api';
+import { useFormRules, useNaiveForm } from '@/hooks/common/form';
+import { checkIpMask } from '@/utils/ip_check';
+
+const { formRef, validate } = useNaiveForm();
+
+const showModal = defineModel<boolean>('show');
+
+const chain = 5;
+
+interface Rule {
+  id: number;
+  comment: string;
+  expr: any[];
+}
+
+const props = defineProps<{
+  row: Rule;
+}>();
+
+const emit = defineEmits<{
+  (e: 'close'): void;
+}>();
+
+const loading = ref(false);
+
+const formValue = ref<any>({
+  protocol: 'all',
+  port: '',
+  limitIp: false,
+  ip: '',
+  limit: null,
+  limitSpeed: 'mbytes/second',
+  comment: ''
+});
+
+const rules = computed<any>(() => {
+  // inside computed to make locale reactive, if not apply i18n, you can define it without computed
+  const { defaultRequiredRule } = useFormRules();
+
+  return {
+    protocol: [defaultRequiredRule],
+    port: [
+      defaultRequiredRule,
+      {
+        trigger: ['input', 'change'],
+        pattern: /^\d[\d,-]*$/,
+        message: $t('page.firewallPolicy.portValidationFailure')
+      },
+      {
+        trigger: ['input', 'change'],
+        validator(_rule: any, value: string) {
+          const state = value.split(',').every((item: string) => {
+            const intItem = Number.parseInt(item, 10);
+            if (intItem < 0 || intItem > 65535) {
+              return false;
+            }
+            return true;
+          });
+          if (!state) {
+            return new Error($t('page.firewallPolicy.portValidationFailure'));
+          }
+          return true;
+        }
+      }
+    ],
+    ip: [
+      defaultRequiredRule,
+      {
+        trigger: ['input', 'change'],
+        validator(_rule: any, value: string) {
+          const state = value.split(',').every((item: string) => {
+            return checkIpMask(item);
+          });
+          if (!state) {
+            return new Error($t('page.firewallPolicy.ipValidationFailure'));
+          }
+          return true;
+        }
+      }
+    ],
+    policy: [defaultRequiredRule],
+    limit: {
+      required: true,
+      type: 'number',
+      min: 1,
+      message: $t('form.required'),
+      trigger: ['change', 'input']
+    }
+  };
+});
+
+function initData() {
+  formValue.value = {
+    protocol: 'all',
+    port: '',
+    limitIp: false,
+    ip: '',
+    limit: null,
+    limitSpeed: 'mbytes/second',
+    comment: ''
+  };
+  emit('close');
+}
+
+async function onSubmit() {
+  await validate();
+  //  提交数据
+  loading.value = true;
+
+  const match = {
+    type: 'match',
+    protocol: 'tcp',
+    field: '',
+    Value: ''
+  };
+
+  if (formValue.value.protocol === 'tcp' || formValue.value.protocol === 'udp') {
+    match.field = 'dport';
+    match.protocol = formValue.value.protocol;
+    match.Value = formValue.value.port;
+  }
+
+  const { error } = await updateFirewallPolicy({
+    id: props.row.id,
+    chain,
+    comment: formValue.value.comment,
+    expr: [
+      {
+        type: 'match',
+        protocol: 'ip',
+        field: 'saddr',
+        Value: formValue.value.limitIp ? formValue.value.ip : ''
+      },
+      match,
+      {
+        type: 'match',
+        protocol: 'limit',
+        field: 'rate over',
+        Value: `${formValue.value.limit} ${formValue.value.limitSpeed}`
+      },
+      {
+        type: 'policy',
+        policy: 'drop'
+      }
+    ]
+  });
+  loading.value = false;
+  if (error) return;
+  window.$message?.success($t('common.updateSuccess'));
+  showModal.value = false;
+}
+
+async function enterModal() {
+  formValue.value = {
+    protocol: '',
+    port: props.row.expr[1].value,
+    limitIp: !(props.row.expr[0].value === '' || !props.row.expr[0].value),
+    ip: props.row.expr[0].value,
+    comment: props.row.comment,
+    limit: null,
+    limitSpeed: ''
+  };
+
+  if (props.row.expr[1].protocol === 'tcp' || props.row.expr[1].protocol === 'udp') {
+    if (props.row.expr[1].value && props.row.expr[1].value !== '') {
+      formValue.value.protocol = props.row.expr[1].protocol;
+      formValue.value.port = props.row.expr[1].value;
+    } else {
+      formValue.value.protocol = 'all';
+    }
+  }
+
+  if (props.row.expr[2].value) {
+    const tmpLimit = props.row.expr[2].value.trim().split(/\s+/);
+    formValue.value.limit = Number.parseInt(tmpLimit[0].trim(), 10);
+    formValue.value.limitSpeed = tmpLimit[1].trim();
+  }
+
+  loading.value = false;
+}
+</script>
+
+<template>
+  <NModal
+    v-model:show="showModal"
+    :mask-closable="false"
+    preset="card"
+    class="w-700px"
+    :title="$t('common.add')"
+    :bordered="false"
+    :segmented="{
+      content: true
+    }"
+    @after-leave="initData"
+    @after-enter="enterModal"
+  >
+    <NSpin :show="loading">
+      <NForm
+        ref="formRef"
+        :model="formValue"
+        label-width="100px"
+        label-placement="left"
+        label-align="left"
+        :rules="rules"
+        class="ml-20px mr-30px"
+      >
+        <NFormItem :label="$t('page.firewallPolicy.protocol')" path="protocol">
+          <!-- <NInput v-model:value="formValue.protocol" /> -->
+          <NSelect
+            v-model:value="formValue.protocol"
+            :options="[
+              {
+                label: $t('page.firewallPolicy.all'),
+                value: 'all'
+              },
+              {
+                label: 'tcp',
+                value: 'tcp'
+              },
+              {
+                label: 'udp',
+                value: 'udp'
+              }
+            ]"
+          />
+        </NFormItem>
+
+        <NFormItem
+          v-if="formValue.protocol === 'tcp' || formValue.protocol === 'udp'"
+          :label="$t('page.firewallPolicy.port')"
+          path="port"
+        >
+          <NSpace vertical :size="14" class="w-full">
+            <NInput v-model:value="formValue.port" />
+            <span class="mb-30px mt-10px font-size-14px text-truegray-400">
+              {{ $t('page.firewallPolicy.portTip') }}
+            </span>
+          </NSpace>
+        </NFormItem>
+
+        <NFormItem :label="$t('page.firewallPolicy.sourceIp')" path="limitIp">
+          <NRadioGroup v-model:value="formValue.limitIp" name="radiogroup">
+            <NSpace>
+              <NRadio :value="false">
+                {{ $t('page.firewallPolicy.allIp') }}
+              </NRadio>
+              <NRadio :value="true">
+                {{ $t('page.firewallPolicy.partialIp') }}
+              </NRadio>
+            </NSpace>
+          </NRadioGroup>
+        </NFormItem>
+
+        <NFormItem v-if="formValue.limitIp" :label="$t('page.firewallPolicy.partialIp')" path="ip">
+          <NSpace vertical :size="14" class="w-full">
+            <NInput v-model:value="formValue.ip" />
+            <span class="mb-30px mt-10px font-size-14px text-truegray-400">
+              {{ $t('page.firewallPolicy.ipTip') }}
+            </span>
+          </NSpace>
+        </NFormItem>
+
+        <NFormItem :label="$t('page.firewallPolicy.speed')" path="limit">
+          <!-- <NInput v-model:value="formValue.policy" /> -->
+          <NSpace>
+            <NInputNumber v-model:value="formValue.limit" />
+
+            <NSelect
+              v-model:value="formValue.limitSpeed"
+              class="w-215px"
+              :options="[
+                {
+                  label: 'kb/s',
+                  value: 'kbytes/second'
+                },
+                {
+                  label: 'mb/s',
+                  value: 'mbytes/second'
+                },
+                {
+                  label: 'kb/m',
+                  value: 'kbytes/minute'
+                },
+                {
+                  label: 'mb/m',
+                  value: 'mbytes/minute'
+                }
+              ]"
+            />
+          </NSpace>
+        </NFormItem>
+
+        <NFormItem :label="$t('page.firewallPolicy.comment')" path="comment">
+          <NInput v-model:value="formValue.comment" type="textarea" />
+        </NFormItem>
+      </NForm>
+    </NSpin>
+    <template #footer>
+      <NSpace justify="end">
+        <NButton @click="showModal = false">{{ $t('common.cancel') }}</NButton>
+        <NButton v-throttle="onSubmit" type="primary">{{ $t('common.confirm') }}</NButton>
+      </NSpace>
+    </template>
+  </NModal>
+</template>

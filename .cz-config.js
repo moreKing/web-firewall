@@ -38,12 +38,6 @@ module.exports = {
             "value": "revert"
         }
     ],
-    scopes: [
-        { name: 'worker' },
-        { name: 'web' },
-        { name: 'server' },
-        { name: 'all' },
-    ],
     // override the messages, defaults are as follows
     messages: {
         type: '选择一种你的提交类型:',
