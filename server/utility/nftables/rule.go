@@ -73,6 +73,7 @@ func DeleteRule(rule *Rule) (err error) {
 func ReplaceRule(rule *Rule) (err error) {
 	command := fmt.Sprintf("replace %s", rule.ToCommand(REPLACE))
 	//fmt.Println(command)
+	g.Log().Debug(context.Background(), command)
 	cmd := exec.Command("nft", command)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

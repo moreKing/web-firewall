@@ -119,7 +119,7 @@ async function onSubmit() {
   };
 
   if (formValue.value.protocol === 'tcp' || formValue.value.protocol === 'udp') {
-    match.field = 'dport';
+    match.field = 'sport';
     match.protocol = formValue.value.protocol;
     match.Value = formValue.value.port;
   }
