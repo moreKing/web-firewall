@@ -1,82 +1,88 @@
 
 # 简介
 
-本项目是一个基于golang+vue3 开发的Web防火墙，它可以在Linux系统中替代firewalld工具。该防火墙可以提供以下功能：
+`web-firewall`基于golang+vue3 开发的Web Linux防火墙，前端使用`SoybeanAdmin`框架，后端使用`goframe2`，数据库支持 `sqlite3(默认)`/`postgresql` ，它可以在Linux系统中替代`firewalld`工具。
 
-1. 查看防火墙状态
-2. 开放端口
-3. 关闭端口
-4. 查看防火墙规则
-5. 添加防火墙规则
-6. 删除防火墙规则
-7. 查看防火墙日志
-8. 查看防火墙统计信息
+Gitee Star：[![gitee star](https://gitee.com/moujun/web-firewall/badge/star.svg)](https://gitee.com/moujun/web-firewall)
 
-##  安装
+Github Star：[![github star](https://img.shields.io/github/stars/moreKing/web-firewall)](https://github.com/moreKing/web-firewall)
 
-1. 克隆项目到本地
+Github Forks：[![github forks](https://img.shields.io/github/forks/moreKing/web-firewall)](https://github.com/moreKing/web-firewall)
 
-```bash
-git clone https://github.com/yourname/firewall.git
-```
-
-2. 进入项目目录
-
-```bash
-cd firewall
-```
-
-3. 安装依赖
-
-```bash
-go mod tidy
-```
-
-4. 编译项目
-
-```bash
-go build
-```
-
-5. 启动项目
-
-```bash
-./firewall
-```
-
-6. 访问Web界面
-
-在浏览器中访问`http://localhost:8080`即可访问Web界面。
+该防火墙可以提供以下功能
 
 
 
+### 功能设计
 
-
-## 功能设计
-
-1. 菜单
-   - 本地策略
-     - [ ] 出站策略 output链
-     - [ ] 入站策略 input链
+   - [x] 本地策略
+     - [x] 出站策略 output链
+     - [x] 出站流控 output链
+     - [x] 入站策略 input链
+     - [x] 入站流控 input链
    - [ ] 地址转换（NAT）
      - [ ] DNAT prerouting链
      - [ ] SNAT postrouting
-   - [ ] 转发策略（作为网关时）forward 链
-   - [ ] 连接数/流量 控制 input链/forward 链
+   - [ ] 转发策略（作为网关时）
+     - [ ] 转发策略forward 链
+     - [ ] 流量控制 forward 链
+
    - [ ] ip黑名单 prerouting链
    - 审计
-     - [ ] 登录日志
-     - [ ] 配置日志
+     - [x] 登录日志
+     - [x] 配置日志
      - [ ] webSSH日志
-   - WebSSH
-     - [ ] ssh操作
+   - WebShell
+     - [x] webshell 支持rzsz，支持自动转码gbk
      - [ ] 文件上传下载
      - [ ] 文本在线编辑
-   - 首页
-   - 系统设置
+   - [ ] 首页
+   - [x] 系统设置
      - [x] 本地密码
      - [x] 会话配置
      - [x] 邮件配置
      - [x] 短信配置
      - [x] 登录设置
+
+### 安装
+
+本项目提供一个已经打包编译好的项目，用户仅需自己[下载](https://gitee.com/moujun/web-firewall/releases/download/v1.1.0/v1.1.0.zip)本项目解压后，执行 里面的`install.sh`文件即可，如果自己编译项目请根据前后端代码自行进行打包即可
+
+```shell
+unzip v1.1.0.zip
+cd v1.1.0
+bash install.sh
+
+# 查看服务是否正常运行
+systemctl status web-firewalld
+
+# 建议停用firewalld服务
+systemctl disable  firewalld
+systemctl stop  firewalld
+```
+
+访问地址：http://ip:8000
+
+默认账号密码：admin/admin
+
+
+### 项目截图
+
+![登录](./img/login.png)
+
+![主题](./img/theme.png)
+
+![国际化](./img/i18.png)
+
+![添加策略](./img/add_policy.png)
+
+![添加流控](./img/add_limit.png)
+
+![暗模式](./img/dark.png)
+
+![自适应](./img/mobile.png)
+
+
+
+
 
