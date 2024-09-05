@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/text/encoding/simplifiedchinese"
 	"os"
 	"os/exec"
 	"path"
@@ -19,7 +20,6 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gorilla/websocket"
 	gonanoid "github.com/matoous/go-nanoid/v2"
-	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 // Shell 定义一个结构体 方便保存各种连接信息
@@ -232,13 +232,6 @@ func (s *Shell) Send2Web() {
 			//fmt.Println(string(sshOut[:n]))
 
 			gbkOut := sshOut[:n]
-			// 判断字符类型
-			if IsGBK(gbkOut) {
-				gbkOut, err = simplifiedchinese.GB18030.NewDecoder().Bytes(gbkOut)
-				if err != nil {
-					gbkOut = sshOut[:n]
-				}
-			}
 
 			if n > 0 {
 				//拿到 sshOut输出后，首先判断当前文件传输状态是否结束
@@ -402,6 +395,13 @@ func (s *Shell) Send2Web() {
 
 						} else {
 							// 如果不满足上面所有的条件 说明只是普通的命令回执显示，直接发回前	端即可
+							// 判断字符类型
+							if IsGBK(gbkOut) {
+								gbkOut, err = simplifiedchinese.GB18030.NewDecoder().Bytes(gbkOut)
+								if err != nil {
+									gbkOut = sshOut[:n]
+								}
+							}
 							_ = s.Websocket.WriteJSON(&WebMsg{Type: "stdin", Data: gbkOut})
 							// 将操作记录到文本中
 							// 写入操作的时间线
