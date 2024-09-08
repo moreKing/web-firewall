@@ -56,7 +56,6 @@ func New() service.INft {
 func (s *sNft) Add(ctx context.Context, rulesets *model.Rulesets, add bool) error {
 
 	err := dao.Rulesets.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-
 		// 添加到数据库中
 		id, err := tx.Ctx(ctx).Model(&do.Rulesets{}).InsertAndGetId(&do.Rulesets{
 			Comment:  rulesets.Comment,
@@ -72,8 +71,10 @@ func (s *sNft) Add(ctx context.Context, rulesets *model.Rulesets, add bool) erro
 
 		// 确定是否在开头或者末尾
 		if rulesets.Position > 0 {
+			isAdd := false
 			for _, r := range *((*s)[rulesets.Chain]) {
 				if r.Id == int64(rulesets.Position) {
+					isAdd = true
 					position, err := strconv.Atoi(strings.TrimSpace(r.Handle))
 					if err != nil {
 						return err
@@ -92,6 +93,9 @@ func (s *sNft) Add(ctx context.Context, rulesets *model.Rulesets, add bool) erro
 					rulesets.Handle = tmpR.Handle
 					break
 				}
+			}
+			if !isAdd {
+				return errors.New("指定位置不存在规则")
 			}
 		} else {
 			// position 不能重复，每次更新必须全量更新避免删除导致位置重复
@@ -285,6 +289,7 @@ func (s *sNft) flushDaoPositionDB(ctx context.Context, chain int) error {
 
 func (s *sNft) Replace(ctx context.Context, rule *model.Rulesets) error {
 	// 获取数组中的策略
+	isUpdate := false
 	for i, rulesets := range *(*s)[rule.Chain] {
 		if rulesets.Id == rule.Id {
 			//	 由于nftables替换存在bug，各Linux表现不一致，这里选择删除重建
@@ -297,13 +302,18 @@ func (s *sNft) Replace(ctx context.Context, rule *model.Rulesets) error {
 			//	return err
 			//}
 
+			isUpdate = true
 			// 新建
+			position, err := strconv.Atoi(strings.TrimSpace(rulesets.Handle))
+			if err != nil {
+				return err
+			}
 
 			addRule, err := nftables.AddRule(ctx, &nftables.Rule{
 				Chain:    nftables.ChainName[rulesets.Chain],
 				Handle:   rulesets.Handle,
 				Add:      false,
-				Position: 0,
+				Position: position,
 				Expr:     rule.Expr,
 			})
 			if err != nil {
@@ -322,6 +332,11 @@ func (s *sNft) Replace(ctx context.Context, rule *model.Rulesets) error {
 			break
 		}
 	}
+
+	if !isUpdate {
+		return errors.New("未匹配的规则策略")
+	}
+
 	// 更新数据库
 	_, err := dao.Rulesets.Ctx(ctx).Where(dao.Rulesets.Columns().Id, rule.Id).Update(&do.Rulesets{
 		Comment: rule.Comment,
