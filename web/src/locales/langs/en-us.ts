@@ -181,7 +181,9 @@ const local: App.I18n.Schema = {
     policy_input: 'Input Policy',
     'policy_input-limit': 'Input Limit',
     policy_output: 'Output Policy',
-    'policy_output-limit': 'Output Limit'
+    'policy_output-limit': 'Output Limit',
+    route: 'Route Policy',
+    route_snat: 'SNAT'
   },
   page: {
     login: {
@@ -573,7 +575,13 @@ const local: App.I18n.Schema = {
       invalidTcp: 'Invalid Connection',
       defaultPolicy: 'Default Policy',
       all: 'All',
-      speed: 'Speed'
+      speed: 'Speed',
+      allEthernet: 'All Ethernet',
+      sourceEthernet: 'Source Ethernet',
+      destinationEthernet: 'Destination Ethernet',
+      dynamicIp: 'Dynamic IP',
+      destIp: 'Destination IP',
+      nat: 'NAT'
     }
   },
   form: {

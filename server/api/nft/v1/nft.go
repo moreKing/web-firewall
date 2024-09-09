@@ -15,6 +15,7 @@ type GetPolicyReq struct {
 }
 type GetPolicyRes struct {
 	Data      []model.Rulesets `json:"data"`
+	Network   []model.Network  `json:"network"`
 	Total     int              `json:"total"`
 	Timestamp int64            `json:"timestamp"`
 }

@@ -21,4 +21,6 @@ resource/public/html
 server
 log
 manifest/license
-manifest/config/weak_password.txt
+manifest/config/weak_password.
+resource/db.sqlite3
+resource/bak.sqlite3

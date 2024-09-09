@@ -246,7 +246,7 @@ func init() {
 		Name:     ChainName[SNAT],
 		Table:    tableName.Name,
 		Family:   tableName.Family,
-		Comment:  "目的地址转换",
+		Comment:  "源地址转换",
 		Type:     "nat",
 		Hook:     "postrouting",
 		Priority: 100,

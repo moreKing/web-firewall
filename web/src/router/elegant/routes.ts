@@ -176,6 +176,29 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'route',
+    path: '/route',
+    component: 'layout.base',
+    meta: {
+      title: 'route',
+      i18nKey: 'route.route',
+      localIcon: 'menu-route',
+      order: 4
+    },
+    children: [
+      {
+        name: 'route_snat',
+        path: '/route/snat',
+        component: 'view.route_snat',
+        meta: {
+          title: 'route_snat',
+          i18nKey: 'route.route_snat',
+          localIcon: 'menu-route_snat'
+        }
+      }
+    ]
+  },
+  {
     name: 'system',
     path: '/system',
     component: 'layout.base',

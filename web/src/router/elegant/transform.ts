@@ -178,6 +178,8 @@ const routeMap: RouteMap = {
   "policy_input-limit": "/policy/input-limit",
   "policy_output": "/policy/output",
   "policy_output-limit": "/policy/output-limit",
+  "route": "/route",
+  "route_snat": "/route/snat",
   "system": "/system",
   "system_basic": "/system/basic",
   "system_shell": "/system/shell",

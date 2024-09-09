@@ -28,6 +28,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   policy_input: () => import("@/views/policy/input/index.vue"),
   "policy_output-limit": () => import("@/views/policy/output-limit/index.vue"),
   policy_output: () => import("@/views/policy/output/index.vue"),
+  route_snat: () => import("@/views/route/snat/index.vue"),
   system_basic: () => import("@/views/system/basic/index.vue"),
   system_shell: () => import("@/views/system/shell/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),

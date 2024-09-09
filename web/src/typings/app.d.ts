@@ -741,6 +741,12 @@ declare namespace App {
           defaultPolicy: string;
           all: string;
           speed: string;
+          allEthernet: string;
+          sourceEthernet: string;
+          destinationEthernet: string;
+          dynamicIp: string;
+          destIp: string;
+          nat: string;
         };
 
         basic: {

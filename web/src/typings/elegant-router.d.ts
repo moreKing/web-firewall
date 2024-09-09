@@ -32,6 +32,8 @@ declare module "@elegant-router/types" {
     "policy_input-limit": "/policy/input-limit";
     "policy_output": "/policy/output";
     "policy_output-limit": "/policy/output-limit";
+    "route": "/route";
+    "route_snat": "/route/snat";
     "system": "/system";
     "system_basic": "/system/basic";
     "system_shell": "/system/shell";
@@ -76,6 +78,7 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "policy"
+    | "route"
     | "system"
     | "user-center"
   >;
@@ -107,6 +110,7 @@ declare module "@elegant-router/types" {
     | "policy_input"
     | "policy_output-limit"
     | "policy_output"
+    | "route_snat"
     | "system_basic"
     | "system_shell"
     | "user-center"

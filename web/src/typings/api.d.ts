@@ -47,6 +47,7 @@ declare namespace Api {
     /** worker list response */
     interface ListRes {
       data: any[];
+      network: any[];
       total: number;
       page: number;
       limit: number;

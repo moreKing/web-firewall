@@ -9,3 +9,8 @@ type Home struct {
 	Today     []int `json:"today"`
 	License   int   `json:"license"`
 }
+
+type Network struct {
+	Index int    `json:"index"`
+	Name  string `json:"name"`
+}

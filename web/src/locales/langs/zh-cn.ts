@@ -183,7 +183,9 @@ const local: App.I18n.Schema = {
     policy_input: '入站策略',
     'policy_input-limit': '入站流控',
     policy_output: '出站策略',
-    'policy_output-limit': '出站流控'
+    'policy_output-limit': '出站流控',
+    route: '路由策略',
+    route_snat: '源地址转换'
   },
   page: {
     login: {
@@ -573,7 +575,13 @@ const local: App.I18n.Schema = {
       invalidTcp: '无法识别连接',
       defaultPolicy: '默认策略',
       all: '全部',
-      speed: '速度'
+      speed: '速度',
+      allEthernet: '所有网口',
+      sourceEthernet: '源网口',
+      destinationEthernet: '出网口',
+      dynamicIp: '动态IP',
+      destIp: '目的IP',
+      nat: '地址转换'
     }
   },
   form: {

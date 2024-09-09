@@ -51,7 +51,7 @@ database:
     level: "all"
     stdout: true
   default:
-    link:  "sqlite::@file(./resource/bak.sqlite3)"
+    link:  "sqlite::@file(./resource/db.sqlite3)"
   debug: true
 
 
