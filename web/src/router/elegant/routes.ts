@@ -187,13 +187,25 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'route_dnat',
+        path: '/route/dnat',
+        component: 'view.route_dnat',
+        meta: {
+          title: 'route_dnat',
+          i18nKey: 'route.route_dnat',
+          localIcon: 'menu-route_dnat',
+          order: 2
+        }
+      },
+      {
         name: 'route_snat',
         path: '/route/snat',
         component: 'view.route_snat',
         meta: {
           title: 'route_snat',
           i18nKey: 'route.route_snat',
-          localIcon: 'menu-route_snat'
+          localIcon: 'menu-route_snat',
+          order: 1
         }
       }
     ]

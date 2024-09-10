@@ -9,7 +9,7 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-const chain = 4;
+const chain = 3;
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -31,39 +31,39 @@ const networkOptions = computed(() => {
 const loading = ref(false);
 
 const formValue = ref({
-  sipAny: true,
-  sip: '',
+  protocol: null,
   dipAny: true,
   dip: '',
-  oif: '',
-  masquerade: true,
-  snat: '',
+  tip: '',
+  ports: [
+    {
+      key: '',
+      value: ''
+    }
+  ],
+  iif: '',
   add: 1,
   position: 0,
   comment: ''
 });
 
-const rules = computed(() => {
+const rules = computed<any>(() => {
   // inside computed to make locale reactive, if not apply i18n, you can define it without computed
   const { defaultRequiredRule } = useFormRules();
 
   return {
-    oif: [defaultRequiredRule],
-    sip: [
-      defaultRequiredRule,
+    iif: [defaultRequiredRule],
+    protocol: [defaultRequiredRule],
+
+    ports: [
       {
         trigger: ['input', 'change'],
-        validator(_rule: any, value: string) {
-          const state = value.split(',').every((item: string) => {
-            return checkIpMask(item);
-          });
-          if (!state) {
-            return new Error($t('page.firewallPolicy.ipValidationFailure'));
-          }
-          return true;
-        }
+        type: 'array',
+        required: true,
+        message: $t('form.required')
       }
     ],
+
     dip: [
       defaultRequiredRule,
       {
@@ -79,33 +79,40 @@ const rules = computed(() => {
         }
       }
     ],
-    snat: [
-      defaultRequiredRule,
+
+    tip: [
       {
+        required: true,
         trigger: ['input', 'change'],
         validator(_rule: any, value: string) {
+          if (!value || value === '') return new Error($t('form.required'));
           if (!checkIpAddr(value)) {
             return new Error($t('page.firewallPolicy.ipValidationFailure'));
           }
           return true;
         }
       }
-    ]
+    ],
+
+    policy: [defaultRequiredRule]
   };
 });
 
 function initData() {
   formValue.value = {
-    sipAny: true,
-    sip: '',
-
+    protocol: null,
     dipAny: true,
     dip: '',
 
-    oif: '',
+    tip: '',
+    ports: [
+      {
+        key: '',
+        value: ''
+      }
+    ],
 
-    masquerade: true,
-    snat: '',
+    iif: '',
 
     add: 1,
     position: 0,
@@ -122,19 +129,10 @@ async function onSubmit() {
 
   expr.push({
     type: 'match',
-    protocol: 'oif',
+    protocol: 'iif',
     field: '',
-    Value: formValue.value.oif
+    Value: formValue.value.iif
   });
-
-  if (!formValue.value.sipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'saddr',
-      Value: formValue.value.sip
-    });
-  }
 
   if (!formValue.value.dipAny) {
     expr.push({
@@ -145,21 +143,15 @@ async function onSubmit() {
     });
   }
 
-  if (!formValue.value.masquerade) {
-    expr.push({
-      type: 'match',
-      protocol: 'snat',
-      field: 'ip to',
-      Value: formValue.value.snat
-    });
-  } else {
-    expr.push({
-      type: 'match',
-      protocol: 'masquerade',
-      field: '',
-      Value: ''
-    });
-  }
+  const tps = formValue.value.ports.map((item: any) => {
+    return `${item.key} : ${formValue.value.tip} . ${item.value}`;
+  });
+  expr.push({
+    type: 'match',
+    protocol: 'dnat',
+    field: `ip to ${formValue.value.protocol} dport map`,
+    Value: tps.join(', ')
+  });
 
   const { error } = await addFirewallPolicy({
     chain,
@@ -203,26 +195,26 @@ async function enterModal() {
         :rules="rules"
         class="ml-20px mr-30px"
       >
-        <NFormItem :label="$t('page.firewallPolicy.sourceIp')" path="sipAny">
-          <NRadioGroup v-model:value="formValue.sipAny" name="radiogroup">
-            <NSpace>
-              <NRadio :value="true">
-                {{ $t('page.firewallPolicy.allIp') }}
-              </NRadio>
-              <NRadio :value="false">
-                {{ $t('page.firewallPolicy.partialIp') }}
-              </NRadio>
-            </NSpace>
-          </NRadioGroup>
+        <NFormItem :label="$t('page.firewallPolicy.sourceEthernet')" path="iif">
+          <!-- <NInput v-model:value="formValue.protocol" /> -->
+          <NSelect v-model:value="formValue.iif" :options="networkOptions" />
         </NFormItem>
 
-        <NFormItem v-if="!formValue.sipAny" label=" " path="sip">
-          <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.sip" />
-            <span class="mb-30px mt-10px font-size-14px text-truegray-400">
-              {{ $t('page.firewallPolicy.ipTip') }}
-            </span>
-          </NSpace>
+        <NFormItem :label="$t('page.firewallPolicy.protocol')" path="protocol">
+          <!-- <NInput v-model:value="formValue.protocol" /> -->
+          <NSelect
+            v-model:value="formValue.protocol"
+            :options="[
+              {
+                label: 'tcp',
+                value: 'tcp'
+              },
+              {
+                label: 'udp',
+                value: 'udp'
+              }
+            ]"
+          />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.destIp')" path="dipAny">
@@ -247,26 +239,90 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.destinationEthernet')" path="oif">
-          <!-- <NInput v-model:value="formValue.protocol" /> -->
-          <NSelect v-model:value="formValue.oif" :options="networkOptions" />
+        <NFormItem :label="$t('page.firewallPolicy.nat')" path="tip">
+          <NInput v-model:value="formValue.tip" />
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.nat')" path="masquerade">
-          <NRadioGroup v-model:value="formValue.masquerade" name="radiogroup">
-            <NSpace>
-              <NRadio :value="true">
-                {{ $t('page.firewallPolicy.dynamicIp') }}
-              </NRadio>
-              <NRadio :value="false">
-                {{ $t('page.firewallPolicy.partialIp') }}
-              </NRadio>
-            </NSpace>
-          </NRadioGroup>
-        </NFormItem>
+        <NFormItem :label="$t('page.firewallPolicy.natPort')" path="ports">
+          <NDynamicInput
+            v-model:value="formValue.ports"
+            item-style="margin-bottom: 0;"
+            :on-create="() => ({ key: '', value: '' })"
+          >
+            <template #action="{ index, create, remove }">
+              <NSpace class="ml-20px w-100px">
+                <NButton strong secondary type="success" @click="() => create(index)">
+                  <NIcon>
+                    <icon-carbon:add-large />
+                  </NIcon>
+                </NButton>
 
-        <NFormItem v-if="!formValue.masquerade" label=" " path="snat">
-          <NInput v-model:value="formValue.snat" />
+                <NButton v-if="index > 0" strong secondary type="error" @click="() => remove(index)">
+                  <NIcon>
+                    <icon-carbon:subtract-large />
+                  </NIcon>
+                </NButton>
+              </NSpace>
+            </template>
+
+            <template #default="{ index }">
+              <div class="flex">
+                <NFormItem
+                  ignore-path-change
+                  :show-label="false"
+                  :path="`ports[${index}].key`"
+                  :rule="{
+                    trigger: ['input', 'change'],
+                    validator(_rule: any, value: string) {
+                      if (!value || value.length === 0) return new Error($t('form.required'));
+                      const pattern = /^\d+$/;
+                      if (!pattern.test(value)) return new Error($t('page.firewallPolicy.portValidationFailure'));
+
+                      const intItem = Number.parseInt(value, 10);
+                      if (intItem < 0 || intItem > 65535) {
+                        return new Error($t('page.firewallPolicy.portValidationFailure'));
+                      }
+                      return true;
+                    }
+                  }"
+                >
+                  <NInput
+                    v-model:value="formValue.ports[index].key"
+                    :placeholder="$t('page.firewallPolicy.destPort')"
+                    @keydown.enter.prevent
+                  />
+                  <!-- 由于在 input 元素里按回车会导致 form 里面的 button 被点击，所以阻止了默认行为 -->
+                </NFormItem>
+                <!-- <div class="ml-8px mr-8px h-34px lh-34px">=</div> -->
+                <icon-carbon:arrow-right class="ml-8px mr-8px h-34px lh-34px" />
+                <NFormItem
+                  ignore-path-change
+                  :show-label="false"
+                  :path="`ports[${index}].value`"
+                  :rule="{
+                    trigger: ['input', 'change'],
+                    validator(_rule: any, value: string) {
+                      if (!value || value.length === 0) return new Error($t('form.required'));
+                      const pattern = /^\d+$/;
+                      if (!pattern.test(value)) return new Error($t('page.firewallPolicy.portValidationFailure'));
+
+                      const intItem = Number.parseInt(value, 10);
+                      if (intItem < 0 || intItem > 65535) {
+                        return new Error($t('page.firewallPolicy.portValidationFailure'));
+                      }
+                      return true;
+                    }
+                  }"
+                >
+                  <NInput
+                    v-model:value="formValue.ports[index].value"
+                    :placeholder="$t('page.firewallPolicy.natPort')"
+                    @keydown.enter.prevent
+                  />
+                </NFormItem>
+              </div>
+            </template>
+          </NDynamicInput>
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.position')" path="position">

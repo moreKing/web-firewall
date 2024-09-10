@@ -54,30 +54,6 @@ const rules = computed(() => {
 
   return {
     oif: [defaultRequiredRule],
-    port: [
-      defaultRequiredRule,
-      {
-        trigger: ['input', 'change'],
-        pattern: /^\d[\d,-]*$/,
-        message: $t('page.firewallPolicy.portValidationFailure')
-      },
-      {
-        trigger: ['input', 'change'],
-        validator(_rule: any, value: string) {
-          const state = value.split(',').every((item: string) => {
-            const intItem = Number.parseInt(item, 10);
-            if (intItem < 0 || intItem > 65535) {
-              return false;
-            }
-            return true;
-          });
-          if (!state) {
-            return new Error($t('page.firewallPolicy.portValidationFailure'));
-          }
-          return true;
-        }
-      }
-    ],
     sip: [
       defaultRequiredRule,
       {
@@ -119,9 +95,7 @@ const rules = computed(() => {
           return true;
         }
       }
-    ],
-
-    policy: [defaultRequiredRule]
+    ]
   };
 });
 function initData() {
@@ -145,6 +119,14 @@ async function onSubmit() {
   //  提交数据
   loading.value = true;
   const expr: any = [];
+
+  expr.push({
+    type: 'match',
+    protocol: 'oif',
+    field: '',
+    Value: formValue.value.oif
+  });
+
   if (!formValue.value.sipAny) {
     expr.push({
       type: 'match',
@@ -162,13 +144,6 @@ async function onSubmit() {
       Value: formValue.value.dip
     });
   }
-
-  expr.push({
-    type: 'match',
-    protocol: 'oif',
-    field: '',
-    Value: formValue.value.oif
-  });
 
   if (!formValue.value.masquerade) {
     expr.push({

@@ -231,12 +231,12 @@ initData();
                   <NSpace class="ml-20px">
                     <NButton strong secondary type="error" @click="() => remove(index)">
                       <NIcon>
-                        <SvgIcon icon="carbon:subtract-large" />
+                        <icon-carbon:subtract-large />
                       </NIcon>
                     </NButton>
                     <NButton strong secondary type="success" @click="() => create(index)">
                       <NIcon>
-                        <SvgIcon icon="carbon:add-large" />
+                        <icon-carbon:add-large />
                       </NIcon>
                     </NButton>
                   </NSpace>

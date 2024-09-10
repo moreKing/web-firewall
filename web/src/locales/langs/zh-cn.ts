@@ -185,7 +185,8 @@ const local: App.I18n.Schema = {
     policy_output: '出站策略',
     'policy_output-limit': '出站流控',
     route: '路由策略',
-    route_snat: '源地址转换'
+    route_snat: '源地址转换',
+    route_dnat: '目的地址转换'
   },
   page: {
     login: {
@@ -577,11 +578,14 @@ const local: App.I18n.Schema = {
       all: '全部',
       speed: '速度',
       allEthernet: '所有网口',
-      sourceEthernet: '源网口',
+      sourceEthernet: '入网口',
       destinationEthernet: '出网口',
       dynamicIp: '动态IP',
       destIp: '目的IP',
-      nat: '地址转换'
+      nat: '地址转换',
+      destPort: '目的端口',
+      sourcePort: '源端口',
+      natPort: '转换端口'
     }
   },
   form: {

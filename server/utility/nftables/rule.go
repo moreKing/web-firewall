@@ -101,7 +101,7 @@ func (r *Rule) ToCommand(mod int) string {
 				}
 
 				res += fmt.Sprintf(" %s %s ", expression.Protocol, expression.Field)
-				if strings.TrimSpace(expression.Field) == "vmap" || strings.Contains(expression.Value, ",") {
+				if strings.Contains(expression.Field, "map") || strings.Contains(expression.Value, ",") {
 					res += fmt.Sprintf("{ %s } ", expression.Value)
 				} else {
 					res += fmt.Sprintf(" %s ", expression.Value)

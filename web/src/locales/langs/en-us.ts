@@ -183,7 +183,8 @@ const local: App.I18n.Schema = {
     policy_output: 'Output Policy',
     'policy_output-limit': 'Output Limit',
     route: 'Route Policy',
-    route_snat: 'SNAT'
+    route_snat: 'SNAT',
+    route_dnat: 'DNAT'
   },
   page: {
     login: {
@@ -581,7 +582,10 @@ const local: App.I18n.Schema = {
       destinationEthernet: 'Destination Ethernet',
       dynamicIp: 'Dynamic IP',
       destIp: 'Destination IP',
-      nat: 'NAT'
+      nat: 'NAT',
+      destPort: 'Destination Port',
+      sourcePort: 'Source Port',
+      natPort: 'NAT Port'
     }
   },
   form: {
