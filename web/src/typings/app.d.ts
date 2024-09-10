@@ -750,6 +750,7 @@ declare namespace App {
           destPort: string;
           sourcePort: string;
           natPort: string;
+          portType: string;
         };
 
         basic: {

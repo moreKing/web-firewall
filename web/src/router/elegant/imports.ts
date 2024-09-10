@@ -30,6 +30,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   policy_output: () => import("@/views/policy/output/index.vue"),
   route_dnat: () => import("@/views/route/dnat/index.vue"),
   route_filter: () => import("@/views/route/filter/index.vue"),
+  route_limit: () => import("@/views/route/limit/index.vue"),
   route_snat: () => import("@/views/route/snat/index.vue"),
   system_basic: () => import("@/views/system/basic/index.vue"),
   system_shell: () => import("@/views/system/shell/index.vue"),

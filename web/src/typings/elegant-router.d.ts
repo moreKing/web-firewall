@@ -35,6 +35,7 @@ declare module "@elegant-router/types" {
     "route": "/route";
     "route_dnat": "/route/dnat";
     "route_filter": "/route/filter";
+    "route_limit": "/route/limit";
     "route_snat": "/route/snat";
     "system": "/system";
     "system_basic": "/system/basic";
@@ -114,6 +115,7 @@ declare module "@elegant-router/types" {
     | "policy_output"
     | "route_dnat"
     | "route_filter"
+    | "route_limit"
     | "route_snat"
     | "system_basic"
     | "system_shell"

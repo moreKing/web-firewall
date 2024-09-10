@@ -181,6 +181,7 @@ const routeMap: RouteMap = {
   "route": "/route",
   "route_dnat": "/route/dnat",
   "route_filter": "/route/filter",
+  "route_limit": "/route/limit",
   "route_snat": "/route/snat",
   "system": "/system",
   "system_basic": "/system/basic",

@@ -111,7 +111,7 @@ const columns = computed<any>(() => [
   {
     show: true,
     key: 'expr[1].value',
-    title: $t('page.firewallPolicy.policy'),
+    title: $t('page.firewallPolicy.port'),
     align: 'center',
     minWidth: 200,
     render(row: any) {

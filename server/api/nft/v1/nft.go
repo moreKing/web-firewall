@@ -10,7 +10,7 @@ import (
 
 type GetPolicyReq struct {
 	g.Meta `path:"/policy/:chain"  tags:"策略管理" method:"get" summary:"添加策略"`
-	Chain  int `json:"chain"  path:"chain"  v:"min:1|max:7" dc:"1 出站策略 2 入站策略 3 目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 ip黑白名单"` //1:出站策略 2: 入站策略 3：目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 ip黑白名单
+	Chain  int `json:"chain"  path:"chain"  v:"min:1|max:9" dc:"1 出站策略 2 入站策略 3 目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 转发策略 8 转发流控 9 ip黑白名单"` //1:出站策略 2: 入站策略 3：目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 ip黑白名单
 
 }
 type GetPolicyRes struct {
@@ -22,7 +22,7 @@ type GetPolicyRes struct {
 
 type AddPolicyReq struct {
 	g.Meta   `path:"/policy/:chain"  tags:"策略管理" method:"post" summary:"添加策略"`
-	Chain    int                   `json:"chain" path:"chain" v:"min:1|max:7" dc:"1 出站策略 2 入站策略 3 目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 ip黑白名单"` //1:出站策略 2: 入站策略 3：目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 ip黑白名单
+	Chain    int                   `json:"chain" path:"chain" v:"min:1|max:9" dc:"1 出站策略 2 入站策略 3 目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 转发策略 8 转发流控 9 ip黑白名单"` //1:出站策略 2: 入站策略 3：目的地址转换 4 源地址转换 5 入站限流 6 出站限流 7 ip黑白名单
 	Comment  string                `json:"comment"`
 	Add      bool                  `json:"add"`      // 使用add 还是insert
 	Position int                   `json:"position"` // 添加规则时插入的位置

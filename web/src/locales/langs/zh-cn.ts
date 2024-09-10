@@ -187,7 +187,8 @@ const local: App.I18n.Schema = {
     route: '路由策略',
     route_snat: '源地址转换',
     route_dnat: '目的地址转换',
-    route_filter: '转发策略'
+    route_filter: '转发策略',
+    route_limit: '转发流控'
   },
   page: {
     login: {
@@ -586,7 +587,8 @@ const local: App.I18n.Schema = {
       nat: '地址转换',
       destPort: '目的端口',
       sourcePort: '源端口',
-      natPort: '转换端口'
+      natPort: '转换端口',
+      portType: '端口类型'
     }
   },
   form: {

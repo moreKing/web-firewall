@@ -25,7 +25,7 @@ func New() service.INft {
 	// 1-7 分别获取
 	var s sNft = make(map[int]*[]model.Rulesets)
 
-	for i := 1; i < 8; i++ {
+	for i := 1; i < 10; i++ {
 		var tmp []model.Rulesets
 		// 注意使用position升序排列
 		err := dao.Rulesets.Ctx(context.Background()).Where(dao.Rulesets.Columns().Chain, i).OrderAsc(dao.Rulesets.Columns().Position).Scan(&tmp)
@@ -150,7 +150,8 @@ func (s *sNft) Add(ctx context.Context, rulesets *model.Rulesets, add bool) erro
 //
 // }
 func (s *sNft) GetChainList(chain int) *[]model.Rulesets {
-	if chain < 1 || chain > 7 {
+	if chain < 1 || chain > 9 {
+		g.Log().Error(context.Background(), "不存在的链id", chain)
 		return nil
 	}
 	return (*s)[chain]

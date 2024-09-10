@@ -209,6 +209,17 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'route_limit',
+        path: '/route/limit',
+        component: 'view.route_limit',
+        meta: {
+          title: 'route_limit',
+          i18nKey: 'route.route_limit',
+          localIcon: 'menu-policy_input-limit',
+          order: 4
+        }
+      },
+      {
         name: 'route_snat',
         path: '/route/snat',
         component: 'view.route_snat',
