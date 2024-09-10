@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { $t } from '@/locales';
 import { debounce } from '@/utils/debounce';
 
@@ -12,22 +11,11 @@ interface Emits {
   (e: 'search'): void;
 }
 
-const props = defineProps<{
-  network: any;
-}>();
-const networkOptions = computed(() => {
-  return props.network.map((item: any) => {
-    return {
-      label: item.name,
-      value: item.name
-    };
-  });
-});
 const emit = defineEmits<Emits>();
 
 interface SearchParams {
-  network: string;
-  tip: string;
+  sourceIp: string;
+  dport: string;
   destIp: string;
 }
 
@@ -48,9 +36,15 @@ const search = debounce(() => {
   emit('search');
 });
 
-//   emit('search');
-// }
-// 0.启用+有效期 1.启用 2.有效期 3.禁用 4.全部 中的一个" dc:"1.启用 2.有效期 3.禁用  0.启用+有效期  4.全部
+const onlyAllowNumber = (value: string) => {
+  if (value === '') return true;
+  if (value || /^\d+$/.test(value)) {
+    const tmp = Number.parseInt(value, 10);
+    return tmp >= 0 && tmp < 65536;
+  }
+
+  return false;
+};
 </script>
 
 <template>
@@ -68,19 +62,19 @@ const search = debounce(() => {
       <NGrid responsive="screen" item-responsive>
         <NFormItemGi
           span="24 s:24 m:12 l:8"
-          :label="$t('page.firewallPolicy.sourceEthernet')"
-          path="policy"
+          :label="$t('page.firewallPolicy.sourceIp')"
+          path="sourceIp"
           class="pr-24px"
         >
-          <NSelect v-model:value="model.network" clearable :options="networkOptions" @update:value="search" />
+          <NInput v-model:value="model.sourceIp" clearable @update:value="search" />
         </NFormItemGi>
 
         <NFormItemGi span="24 s:24 m:12 l:8" :label="$t('page.firewallPolicy.destIp')" path="destIp" class="pr-24px">
           <NInput v-model:value="model.destIp" clearable @update:value="search" />
         </NFormItemGi>
 
-        <NFormItemGi span="24 s:24 m:12 l:8" :label="$t('page.firewallPolicy.nat')" path="tip" class="pr-24px">
-          <NInput v-model:value="model.tip" clearable @update:value="search" />
+        <NFormItemGi span="24 s:24 m:12 l:8" :label="$t('page.firewallPolicy.port')" path="dport" class="pr-24px">
+          <NInput v-model:value="model.dport" clearable :allow-input="onlyAllowNumber" @update:value="search" />
         </NFormItemGi>
       </NGrid>
     </NForm>

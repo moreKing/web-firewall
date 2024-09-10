@@ -8,7 +8,7 @@ import { deleteFirewallPolicy, getFirewallPolicyList } from '@/service/api';
 import { $t } from '@/locales';
 import CustomTableHeader from '@/components/table/custom-table-header.vue';
 import { ADD_FIREWALL_POLICY } from '@/utils/permissions_consts';
-import { checkIpAddr, checkIpInNet } from '@/utils/ip_check';
+import { checkIpAddr, checkIpInNet, checkPort } from '@/utils/ip_check';
 import UpdatePosition from '@/components/policy/update-position.vue';
 import { createAction } from '@/components/policy/utils';
 import DataSearch from './modules/table-search.vue';
@@ -16,22 +16,23 @@ import AddData from './modules/add-data.vue';
 import UpdateData from './modules/update-data.vue';
 
 const chain = 7;
+
 interface SearchParams {
-  network: string;
-  tip: string;
+  sourceIp: string;
+  dport: string;
   destIp: string;
 }
 
 const listParams: Ref<SearchParams> = ref({
-  network: '',
-  tip: '',
+  sourceIp: '',
+  dport: '',
   destIp: ''
 });
 
 function resetSearchParams() {
   listParams.value = {
-    network: '',
-    tip: '',
+    sourceIp: '',
+    dport: '',
     destIp: ''
   };
   getData();
@@ -327,13 +328,6 @@ function filterDataFn() {
   // eslint-disable-next-line complexity
   filterData.value = data.filter((item: any) => {
     for (const element of item.expr) {
-      if (element.protocol === 'dnat' && listParams.value.tip && listParams.value.tip.trim() !== '') {
-        // 判断ip 是否有效，有效才进行过滤
-        if (checkIpAddr(listParams.value.tip)) {
-          if (!element.value.includes(` ${listParams.value.tip.trim()} `)) return false;
-        }
-        continue;
-      }
       if (
         element.protocol === 'ip' &&
         element.field === 'daddr' &&
@@ -358,8 +352,48 @@ function filterDataFn() {
         continue;
       }
 
-      if (element.protocol === 'iif' && listParams.value.network && listParams.value.network.trim() !== '') {
-        if (element.value !== listParams.value.network) return false;
+      if (
+        element.protocol === 'ip' &&
+        element.field === 'saddr' &&
+        listParams.value.sourceIp &&
+        listParams.value.sourceIp.trim() !== ''
+      ) {
+        // 判断ip 是否有效，有效才进行过滤
+        if (checkIpAddr(listParams.value.sourceIp)) {
+          // 判断是否在范围&& checkIpInNet()
+          const tmpIps = element.value.split(',');
+
+          let tmpIpState = false;
+          for (let i = 0; i < tmpIps.length; i += 1) {
+            // eslint-disable-next-line max-depth
+            if (tmpIps[i] && checkIpInNet(listParams.value.sourceIp, tmpIps[i])) {
+              tmpIpState = true;
+              break;
+            }
+          }
+          if (!tmpIpState) return false;
+        }
+        continue;
+      }
+
+      if (
+        (element.protocol === 'tcp' || element.protocol === 'udp') &&
+        listParams.value.dport &&
+        listParams.value.dport.trim() !== ''
+      ) {
+        // 判断ip 是否有效，有效才进行过滤
+        const ports = element.value.split(',');
+        let tmpState = false;
+        for (let i = 0; i < ports.length; i += 1) {
+          // eslint-disable-next-line max-depth
+          if (checkPort(listParams.value.dport, ports[i])) {
+            tmpState = true;
+            break;
+          }
+        }
+
+        // eslint-disable-next-line max-depth
+        if (!tmpState) return false;
         continue;
       }
     }
