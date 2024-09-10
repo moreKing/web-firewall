@@ -186,7 +186,8 @@ const local: App.I18n.Schema = {
     'policy_output-limit': '出站流控',
     route: '路由策略',
     route_snat: '源地址转换',
-    route_dnat: '目的地址转换'
+    route_dnat: '目的地址转换',
+    route_filter: '转发策略'
   },
   page: {
     login: {

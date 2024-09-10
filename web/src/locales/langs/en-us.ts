@@ -184,7 +184,8 @@ const local: App.I18n.Schema = {
     'policy_output-limit': 'Output Limit',
     route: 'Route Policy',
     route_snat: 'SNAT',
-    route_dnat: 'DNAT'
+    route_dnat: 'DNAT',
+    route_filter: 'Forward Policy'
   },
   page: {
     login: {

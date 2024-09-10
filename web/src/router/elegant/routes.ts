@@ -198,6 +198,17 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'route_filter',
+        path: '/route/filter',
+        component: 'view.route_filter',
+        meta: {
+          title: 'route_filter',
+          i18nKey: 'route.route_filter',
+          localIcon: 'menu-route_filter',
+          order: 3
+        }
+      },
+      {
         name: 'route_snat',
         path: '/route/snat',
         component: 'view.route_snat',

@@ -180,6 +180,7 @@ const routeMap: RouteMap = {
   "policy_output-limit": "/policy/output-limit",
   "route": "/route",
   "route_dnat": "/route/dnat",
+  "route_filter": "/route/filter",
   "route_snat": "/route/snat",
   "system": "/system",
   "system_basic": "/system/basic",

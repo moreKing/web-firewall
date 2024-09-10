@@ -55,12 +55,7 @@ const formValue = ref<FormValue>({
   dipAny: true,
   dip: '',
   tip: '',
-  ports: [
-    {
-      key: '',
-      value: ''
-    }
-  ],
+  ports: [],
   iif: '',
   add: 1,
   position: 0,

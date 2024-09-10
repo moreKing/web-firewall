@@ -9,19 +9,6 @@ var tableName = &Table{
 }
 
 const (
-// INPUT   = "m_input"
-// OUTPUT  = "m_output"
-// DNAT    = "m_dnat"
-// SNAT    = "m_snat"
-// FORWARD = "m_forward"
-//
-// LIMIT_INPUT  = "m_limit_input"
-// LIMIT_OUTPUT = "m_limit_output"
-//
-// IP_B_W = "m_ip_b_w" // ip黑白名单
-)
-
-const (
 	_ = iota
 	INPUT
 	OUTPUT
@@ -29,21 +16,27 @@ const (
 	SNAT
 	LIMIT_INPUT
 	LIMIT_OUTPUT
+	FORWARD
+	LIMIT_FORWARD
 	IP_B_W
 	INPUT_BASIC
 	OUTPUT_BASIC
+	FORWARD_BASIC
 )
 
 var ChainName = map[int]string{
-	INPUT:        "m_input",
-	OUTPUT:       "m_output",
-	DNAT:         "m_dnat",
-	SNAT:         "m_snat",
-	LIMIT_INPUT:  "m_limit_input",
-	LIMIT_OUTPUT: "m_limit_output",
-	IP_B_W:       "m_ip_b_w", // ip黑白名单
-	INPUT_BASIC:  "m_input_basic",
-	OUTPUT_BASIC: "m_output_basic",
+	INPUT:         "m_input",
+	OUTPUT:        "m_output",
+	DNAT:          "m_dnat",
+	SNAT:          "m_snat",
+	LIMIT_INPUT:   "m_limit_input",
+	LIMIT_OUTPUT:  "m_limit_output",
+	FORWARD:       "m_forward",
+	IP_B_W:        "m_ip_b_w", // ip黑白名单
+	INPUT_BASIC:   "m_input_basic",
+	OUTPUT_BASIC:  "m_output_basic",
+	FORWARD_BASIC: "m_forward_basic",
+	LIMIT_FORWARD: "m_limit_forwarded",
 }
 
 func init() {
@@ -258,7 +251,75 @@ func init() {
 	}
 
 	//todo 转发策略（作为网关时）forward 链 暂时不实现
+	forwardBasic := Chain{
+		Name:     ChainName[FORWARD_BASIC],
+		Table:    tableName.Name,
+		Family:   tableName.Family,
+		Comment:  "转发规则策略",
+		Type:     "filter",
+		Hook:     "output",
+		Priority: 0,
+		Policy:   "accept",
+	}
+	err = forwardBasic.Add()
+	if err != nil {
+		panic(err)
+	}
 
+	limitForward := Chain{
+		Name:    ChainName[LIMIT_FORWARD],
+		Table:   tableName.Name,
+		Family:  tableName.Family,
+		Comment: "转发流量控制(限制客户端下载速度/包数量)",
+	}
+	err = limitForward.Add()
+	if err != nil {
+		panic(err)
+	}
+
+	// 添加入站策略到基础链
+	_, err = AddRule(context.Background(), &Rule{
+		Chain:    ChainName[FORWARD_BASIC],
+		Add:      true,
+		Position: 0,
+		Expr: []Expression{
+			{
+				Type:     "match",
+				Protocol: "jump",
+				Field:    ChainName[LIMIT_FORWARD],
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	forward := Chain{
+		Name:    ChainName[FORWARD],
+		Table:   tableName.Name,
+		Family:  tableName.Family,
+		Comment: "转发规则策略",
+	}
+	err = forward.Add()
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = AddRule(context.Background(), &Rule{
+		Chain:    ChainName[FORWARD_BASIC],
+		Add:      true,
+		Position: 0,
+		Expr: []Expression{
+			{
+				Type:     "match",
+				Protocol: "jump",
+				Field:    ChainName[FORWARD],
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
 	// ip黑名单 prerouting链 优先级高
 
 	ip_b_w := Chain{
