@@ -231,6 +231,11 @@ async function enterModal() {
         :rules="rules"
         class="ml-20px mr-30px"
       >
+        <NFormItem :label="$t('page.firewallPolicy.destinationEthernet')" path="oif">
+          <!-- <NInput v-model:value="formValue.protocol" /> -->
+          <NSelect v-model:value="formValue.oif" :options="networkOptions" />
+        </NFormItem>
+
         <NFormItem :label="$t('page.firewallPolicy.sourceIp')" path="sipAny">
           <NRadioGroup v-model:value="formValue.sipAny" name="radiogroup">
             <NSpace>
@@ -273,11 +278,6 @@ async function enterModal() {
               {{ $t('page.firewallPolicy.ipTip') }}
             </span>
           </NSpace>
-        </NFormItem>
-
-        <NFormItem :label="$t('page.firewallPolicy.destinationEthernet')" path="oif">
-          <!-- <NInput v-model:value="formValue.protocol" /> -->
-          <NSelect v-model:value="formValue.oif" :options="networkOptions" />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.nat')" path="masquerade">
