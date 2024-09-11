@@ -404,7 +404,7 @@ func (s *Shell) Send2Web() {
 							_ = s.Websocket.WriteJSON(&WebMsg{Type: "stdin", Data: gbkOut})
 							// 将操作记录到文本中
 							// 写入操作的时间线
-							_, _ = fileTimeLine.Write([]byte(fmt.Sprintf("%d\t%d\n", time.Now().Unix(), len(gbkOut))))
+							_, _ = fileTimeLine.Write([]byte(fmt.Sprintf("%d\t%d\n", time.Now().UnixMilli(), len(gbkOut))))
 							//写入操作的内容
 							_, _ = fileOperator.Write(gbkOut)
 							// 高危命令判定前，把用户输入的内容存起来留作判定

@@ -16,6 +16,9 @@ type (
 		CreateCode(ctx context.Context, id int64, ip string, offset int) (*model.VerificationCode, error)
 		VerifyTotp(ctx context.Context, code, secret string, userid int64) error
 		RemoveExpireCode()
+		// 复用一下这个作为websocket的token，懒得再写一个了
+		CreateWebsocketToken(ctx context.Context, id int64, ip string, offset int) (*model.VerificationCode, error)
+		VerifyWebsocketToken(ctx context.Context, secret, clientIP string) (userId int64, err error)
 	}
 )
 

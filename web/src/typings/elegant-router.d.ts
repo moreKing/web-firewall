@@ -24,6 +24,7 @@ declare module "@elegant-router/types" {
     "audit": "/audit";
     "audit_login": "/audit/login";
     "audit_settings": "/audit/settings";
+    "audit_shell": "/audit/shell";
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
@@ -108,6 +109,7 @@ declare module "@elegant-router/types" {
     | "login"
     | "audit_login"
     | "audit_settings"
+    | "audit_shell"
     | "home"
     | "policy_input-limit"
     | "policy_input"

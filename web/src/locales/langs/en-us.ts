@@ -186,7 +186,8 @@ const local: App.I18n.Schema = {
     route_snat: 'SNAT',
     route_dnat: 'DNAT',
     route_filter: 'Forward Policy',
-    route_limit: 'NAT Limit'
+    route_limit: 'NAT Limit',
+    audit_shell: 'Shell'
   },
   page: {
     login: {
@@ -531,7 +532,8 @@ const local: App.I18n.Schema = {
       path: 'Path',
       operateResult: 'Operate Result',
       requestBody: 'Request Body',
-      responseBody: 'Response Body'
+      responseBody: 'Response Body',
+      replay: 'Replay'
     },
 
     shell: {

@@ -535,6 +535,7 @@ declare namespace App {
           requestBody: string;
           responseBody: string;
           operateResult: string;
+          replay: string;
         };
         function: {
           tab: {

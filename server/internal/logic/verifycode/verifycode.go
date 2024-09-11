@@ -142,3 +142,41 @@ func (s *sCodeServer) RemoveExpireCode() {
 		}
 	}
 }
+
+// 复用一下这个作为websocket的token，懒得再写一个了
+func (s *sCodeServer) CreateWebsocketToken(ctx context.Context, id int64, ip string, offset int) (*model.VerificationCode, error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+	// 同一个用户 1小时内不能创建相同的验证码，创建验证码后校验验证码是否被使用
+
+	// 验证码没有使用过 生成uuid，并添加到数组中
+	vcode := &model.VerificationCode{
+		Token:     gonanoid.Must(),
+		ClientIP:  ip,
+		UserId:    id,
+		CreatedAt: time.Now().Unix(),
+		ExpiredAt: time.Now().Add(time.Minute * time.Duration(offset)).Unix(),
+	}
+
+	s.codes[vcode.Token] = vcode
+
+	return vcode, nil
+}
+
+func (s *sCodeServer) VerifyWebsocketToken(ctx context.Context, secret, clientIP string) (userId int64, err error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	code, ok := s.codes[secret]
+	if !ok {
+		return 0, errors.New("无效的请求")
+	}
+
+	if code.ClientIP != clientIP {
+		return 0, errors.New("token与地址不符")
+	}
+	delete(s.codes, secret)
+
+	return code.UserId, nil
+
+}

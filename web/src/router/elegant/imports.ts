@@ -23,6 +23,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   login: () => import("@/views/_builtin/login/index.vue"),
   audit_login: () => import("@/views/audit/login/index.vue"),
   audit_settings: () => import("@/views/audit/settings/index.vue"),
+  audit_shell: () => import("@/views/audit/shell/index.vue"),
   home: () => import("@/views/home/index.vue"),
   "policy_input-limit": () => import("@/views/policy/input-limit/index.vue"),
   policy_input: () => import("@/views/policy/input/index.vue"),

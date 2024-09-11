@@ -83,6 +83,17 @@ export const generatedRoutes: GeneratedRoute[] = [
           localIcon: 'menu-log_setting',
           order: 2
         }
+      },
+      {
+        name: 'audit_shell',
+        path: '/audit/shell',
+        component: 'view.audit_shell',
+        meta: {
+          title: 'audit_shell',
+          i18nKey: 'route.audit_shell',
+          localIcon: 'menu-audit_shell',
+          order: 3
+        }
       }
     ]
   },

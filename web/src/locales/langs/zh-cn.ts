@@ -188,7 +188,8 @@ const local: App.I18n.Schema = {
     route_snat: '源地址转换',
     route_dnat: '目的地址转换',
     route_filter: '转发策略',
-    route_limit: '转发流控'
+    route_limit: '转发流控',
+    audit_shell: 'Shell日志'
   },
   page: {
     login: {
@@ -531,7 +532,8 @@ const local: App.I18n.Schema = {
       path: '请求路径',
       operateResult: '操作结果',
       requestBody: '请求内容',
-      responseBody: '响应内容'
+      responseBody: '响应内容',
+      replay: '回放'
     },
 
     shell: {
