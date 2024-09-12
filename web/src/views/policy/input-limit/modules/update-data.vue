@@ -190,7 +190,7 @@ async function enterModal() {
     :mask-closable="false"
     preset="card"
     class="w-700px"
-    :title="$t('common.add')"
+    :title="$t('common.edit')"
     :bordered="false"
     :segmented="{
       content: true
