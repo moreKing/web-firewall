@@ -26,11 +26,11 @@ module.exports = {
             "value": "test"
         },
         {
-            "name": "🛠 构建工具",
+            "name": "📦 其他更新",
             "value": "chore"
         },
         {
-            "name": "📝 文档变更",
+            "name": "📝 文档更新",
             "value": "docs"
         },
         {

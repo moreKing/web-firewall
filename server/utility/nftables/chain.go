@@ -22,8 +22,13 @@ type Chain struct {
 func (c *Chain) Add() error {
 
 	if c.Type == "" {
-		command := fmt.Sprintf(`add chain %s %s %s { comment "%s" ; }`,
-			c.Family, c.Table, c.Name, c.Comment)
+		command := fmt.Sprintf(`add chain %s %s %s`,
+			c.Family, c.Table, c.Name)
+
+		if c.Comment != "" {
+			command += fmt.Sprintf(` { comment "%s" ; }`, c.Comment)
+		}
+
 		cmd := exec.Command("nft", command)
 		output, err := cmd.CombinedOutput()
 		fmt.Println(string(output))

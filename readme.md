@@ -15,38 +15,36 @@ Github Forks：[![github forks](https://img.shields.io/github/forks/moreKing/web
 
 ### 功能设计
 
-   - ✅ 本地策略
-     - ✅ 出站策略 output链
-     - ✅ 出站流控 output链
-     - ✅ 入站策略 input链
-     - ✅ 入站流控 input链
-   - ☐ 地址转换（NAT）
-     - ☐ DNAT prerouting链
-     - ☐ SNAT postrouting
-   - ☐ 转发策略（作为网关时）
-     - ☐ 转发策略forward 链
-     - ☐ 流量控制 forward 链
-
-   - ☐ ip黑名单 prerouting链
-   - 审计
-     - ✅ 登录日志
-     - ✅ 配置日志
-     - ☐ webSSH日志
-   - WebShell
-     - ✅ webshell 支持rzsz，支持自动转码gbk
-     - ☐ 文件上传下载
-     - ☐ 文本在线编辑
-   - ☐ 首页
-   - ✅ 系统设置
-     - ✅ 本地密码
-     - ✅ 会话配置
-     - ✅ 邮件配置
-     - ✅ 短信配置
-     - ✅ 登录设置
+   - [x] 本地策略
+     - [x] 出站策略 output链
+     - [x] 出站流控 output链
+     - [x] 入站策略 input链
+     - [x] 入站流控 input链
+   - [x] 路由策略
+     - [x] DNAT prerouting链
+     - [x] SNAT postrouting
+     - [x] 转发策略forward 链
+     - [x]  流量控制 forward 链
+   - [x] 审计
+     - [x] 登录日志
+     - [x] 配置日志
+     - [x] webSSH日志
+   - [x] WebShell
+     - [x] webshell 支持rzsz
+     - [ ] 文件上传下载
+     - [ ] 文本在线编辑
+   - [ ] 首页
+   - [x] 系统设置
+     - [ ] ip黑名单 prerouting链
+     - [x] 本地密码
+     - [x] 会话配置
+     - [x] 邮件配置
+     - [x] 短信配置
+     - [x] 登录设置
 
 ### 安装
 
-本项目提供一个已经打包编译好的项目，用户仅需自己[下载](https://gitee.com/moujun/web-firewall/releases/download/v1.1.0/v1.1.0.zip)本项目解压后，执行 里面的`install.sh`文件即可，如果自己编译项目请根据前后端代码自行进行打包即可
+本项目提供一个已经打包编译好的项目，用户仅需自己[下载](https://moujun.top/web-firewall/version.html)本项目解压后，执行 里面的`install.sh`文件即可，如果自己编译项目请根据前后端代码自行进行打包即可
 
 ```shell
 unzip v1.1.0.zip

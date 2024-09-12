@@ -3,9 +3,9 @@ package nftables
 import "context"
 
 var tableName = &Table{
-	Name:    "web-firewall",
-	Comment: "web防火墙系统",
-	Family:  "inet",
+	Name: "web-firewall",
+	//Comment: "web防火墙系统",
+	Family: "inet",
 }
 
 const (
@@ -51,10 +51,10 @@ func init() {
 	//	创建链
 	//入站策略 input链
 	inputBasic := Chain{
-		Name:     ChainName[INPUT_BASIC],
-		Table:    tableName.Name,
-		Family:   tableName.Family,
-		Comment:  "入站规则策略",
+		Name:   ChainName[INPUT_BASIC],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment:  "入站规则策略",
 		Type:     "filter",
 		Hook:     "input",
 		Priority: 100,
@@ -68,10 +68,10 @@ func init() {
 	// 连接数/流量 控制 input链/output链/forward 链 优先级高 目前不做forward流控，仅做上传/下载 即 出站/入站 策略流控
 
 	limitIn := Chain{
-		Name:    ChainName[LIMIT_INPUT],
-		Table:   tableName.Name,
-		Family:  tableName.Family,
-		Comment: "入站流量控制(限制客户端上传速度/包数量)",
+		Name:   ChainName[LIMIT_INPUT],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment: "入站流量控制(限制客户端上传速度/包数量)",
 	}
 	err = limitIn.Add()
 	if err != nil {
@@ -120,10 +120,10 @@ func init() {
 
 	// 入站默认策略
 	input := Chain{
-		Name:    ChainName[INPUT],
-		Table:   tableName.Name,
-		Family:  tableName.Family,
-		Comment: "入站规则策略",
+		Name:   ChainName[INPUT],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment: "入站规则策略",
 	}
 	err = input.Add()
 	if err != nil {
@@ -149,10 +149,10 @@ func init() {
 
 	// 出站策略 output链
 	outputBasic := Chain{
-		Name:     ChainName[OUTPUT_BASIC],
-		Table:    tableName.Name,
-		Family:   tableName.Family,
-		Comment:  "出站规则策略",
+		Name:   ChainName[OUTPUT_BASIC],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment:  "出站规则策略",
 		Type:     "filter",
 		Hook:     "output",
 		Priority: 100,
@@ -164,10 +164,10 @@ func init() {
 	}
 
 	limitOUT := Chain{
-		Name:    ChainName[LIMIT_OUTPUT],
-		Table:   tableName.Name,
-		Family:  tableName.Family,
-		Comment: "出站流量控制(限制客户端下载速度/包数量)",
+		Name:   ChainName[LIMIT_OUTPUT],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment: "出站流量控制(限制客户端下载速度/包数量)",
 	}
 	err = limitOUT.Add()
 	if err != nil {
@@ -192,10 +192,10 @@ func init() {
 	}
 
 	output := Chain{
-		Name:    ChainName[OUTPUT],
-		Table:   tableName.Name,
-		Family:  tableName.Family,
-		Comment: "出站规则策略",
+		Name:   ChainName[OUTPUT],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment: "出站规则策略",
 	}
 	err = output.Add()
 	if err != nil {
@@ -220,10 +220,10 @@ func init() {
 
 	//DNAT prerouting链
 	dnat := Chain{
-		Name:     ChainName[DNAT],
-		Table:    tableName.Name,
-		Family:   tableName.Family,
-		Comment:  "目的地址转换",
+		Name:   ChainName[DNAT],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment:  "目的地址转换",
 		Type:     "nat",
 		Hook:     "prerouting",
 		Priority: 100,
@@ -236,10 +236,10 @@ func init() {
 
 	//SNAT postrouting
 	snat := Chain{
-		Name:     ChainName[SNAT],
-		Table:    tableName.Name,
-		Family:   tableName.Family,
-		Comment:  "源地址转换",
+		Name:   ChainName[SNAT],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment:  "源地址转换",
 		Type:     "nat",
 		Hook:     "postrouting",
 		Priority: 100,
@@ -252,10 +252,10 @@ func init() {
 
 	//todo 转发策略（作为网关时）forward 链 暂时不实现
 	forwardBasic := Chain{
-		Name:     ChainName[FORWARD_BASIC],
-		Table:    tableName.Name,
-		Family:   tableName.Family,
-		Comment:  "转发规则策略",
+		Name:   ChainName[FORWARD_BASIC],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment:  "转发规则策略",
 		Type:     "filter",
 		Hook:     "output",
 		Priority: 0,
@@ -267,10 +267,10 @@ func init() {
 	}
 
 	limitForward := Chain{
-		Name:    ChainName[LIMIT_FORWARD],
-		Table:   tableName.Name,
-		Family:  tableName.Family,
-		Comment: "转发流量控制(限制客户端下载速度/包数量)",
+		Name:   ChainName[LIMIT_FORWARD],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment: "转发流量控制(限制客户端下载速度/包数量)",
 	}
 	err = limitForward.Add()
 	if err != nil {
@@ -295,10 +295,10 @@ func init() {
 	}
 
 	forward := Chain{
-		Name:    ChainName[FORWARD],
-		Table:   tableName.Name,
-		Family:  tableName.Family,
-		Comment: "转发规则策略",
+		Name:   ChainName[FORWARD],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment: "转发规则策略",
 	}
 	err = forward.Add()
 	if err != nil {
@@ -323,10 +323,10 @@ func init() {
 	// ip黑名单 prerouting链 优先级高
 
 	ip_b_w := Chain{
-		Name:     ChainName[IP_B_W],
-		Table:    tableName.Name,
-		Family:   tableName.Family,
-		Comment:  "ip地址黑白名单",
+		Name:   ChainName[IP_B_W],
+		Table:  tableName.Name,
+		Family: tableName.Family,
+		//Comment:  "ip地址黑白名单",
 		Type:     "filter",
 		Hook:     "prerouting",
 		Priority: 0,
