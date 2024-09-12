@@ -257,7 +257,7 @@ func init() {
 		Family: tableName.Family,
 		//Comment:  "转发规则策略",
 		Type:     "filter",
-		Hook:     "output",
+		Hook:     "forward",
 		Priority: 0,
 		Policy:   "accept",
 	}

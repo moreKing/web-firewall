@@ -7,6 +7,9 @@
 	},
 	"scripts": {
 		"release": "commit-and-tag-version",
+		"minor": "commit-and-tag-version -r minor",
+		"patch": "commit-and-tag-version -r patch",
+		"major": "commit-and-tag-version -r major",
 		"commit": "git add . && git cz",
 		"prepare": "git-validator install  --no-eslint",
 		"style": "git-validator",

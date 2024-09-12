@@ -191,6 +191,10 @@ async function enterModal() {
       formValue.value.dport = item.value;
     }
 
+    if (item.type === 'policy') {
+      formValue.value.policy = item.policy;
+    }
+
     // if (item.protocol === 'snat')
   });
 

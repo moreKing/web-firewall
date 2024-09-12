@@ -248,6 +248,41 @@ const columns = computed<any>(() => [
 
   {
     show: true,
+    title: $t('page.firewallPolicy.action'),
+    align: 'center',
+    minWidth: 100,
+    render(row: any) {
+      for (const item of row.expr) {
+        if (item.type === 'policy') {
+          return h(
+            NTag,
+            {
+              bordered: false,
+              type: item.policy === 'accept' ? 'success' : 'error'
+            },
+            {
+              default: () =>
+                item.policy === 'accept' ? $t('page.firewallPolicy.accept') : $t('page.firewallPolicy.drop')
+            }
+          );
+        }
+      }
+
+      return h(
+        NTag,
+        {
+          bordered: false,
+          type: 'success'
+        },
+        {
+          default: () => $t('page.firewallPolicy.all')
+        }
+      );
+    }
+  },
+
+  {
+    show: true,
     title: $t('datatable.createTime'),
     key: 'createdAt',
     align: 'center',
