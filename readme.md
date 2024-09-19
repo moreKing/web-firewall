@@ -63,6 +63,22 @@ systemctl stop  firewalld
 
 默认账号密码：admin/admin
 
+### docker部署
+docker使用必须以特权和host模式运行才能操作主机的网络配置
+```bash
+docker run
+  -itd
+  --network host
+  --privileged 
+  -v /path/config:/web-firewall/manifest/config
+  web-firewall
+```
+`/path/config`目录内需要提供config.yaml配置文件和db.sqlite3初始化数据库文件
+
+配置中database的目录需要修改为
+```yaml
+link: "sqlite::@file(./manifest/config/db.sqlite3)"
+```
 
 ### 项目截图
 
