@@ -40,6 +40,7 @@ declare module "@elegant-router/types" {
     "route_snat": "/route/snat";
     "system": "/system";
     "system_basic": "/system/basic";
+    "system_kernel": "/system/kernel";
     "system_shell": "/system/shell";
     "user-center": "/user-center";
   };
@@ -120,6 +121,7 @@ declare module "@elegant-router/types" {
     | "route_limit"
     | "route_snat"
     | "system_basic"
+    | "system_kernel"
     | "system_shell"
     | "user-center"
   >;

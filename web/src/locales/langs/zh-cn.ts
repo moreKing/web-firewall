@@ -189,7 +189,8 @@ const local: App.I18n.Schema = {
     route_dnat: '目的地址转换',
     route_filter: '转发策略',
     route_limit: '转发流控',
-    audit_shell: 'Shell日志'
+    audit_shell: 'Shell日志',
+    system_kernel: '内核参数'
   },
   page: {
     login: {
@@ -591,6 +592,9 @@ const local: App.I18n.Schema = {
       sourcePort: '源端口',
       natPort: '转换端口',
       portType: '端口类型'
+    },
+    kernel: {
+      forward: '数据转发'
     }
   },
   form: {

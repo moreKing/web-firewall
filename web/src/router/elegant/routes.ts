@@ -266,6 +266,17 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'system_kernel',
+        path: '/system/kernel',
+        component: 'view.system_kernel',
+        meta: {
+          title: 'system_kernel',
+          i18nKey: 'route.system_kernel',
+          order:2,
+          localIcon: 'menu-system_kernel'
+        }
+      },
+      {
         name: 'system_shell',
         path: '/system/shell',
         component: 'view.system_shell',

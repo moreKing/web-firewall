@@ -29,3 +29,6 @@ export const PUT_AUTH_CONF = 'PUT:/api/v1/system/auth-conf';
 // 切断在线登录会话
 export const CUT_ONLINE_LOGIN = 'POST:/api/v1/audit/cut-login/{uuid}';
 export const GET_AUDIT_SHELL_REPLAY_TOKEN = 'POST:/api/v1/audit/shell-token';
+
+// 内核参数
+export const PUT_SYSTEM_KERNEL = 'PUT:/api/v1/system/kernel';

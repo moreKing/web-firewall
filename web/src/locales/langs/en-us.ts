@@ -187,7 +187,8 @@ const local: App.I18n.Schema = {
     route_dnat: 'DNAT',
     route_filter: 'Forward Policy',
     route_limit: 'NAT Limit',
-    audit_shell: 'Shell'
+    audit_shell: 'Shell',
+    system_kernel: 'Kernel'
   },
   page: {
     login: {
@@ -591,6 +592,9 @@ const local: App.I18n.Schema = {
       sourcePort: 'Source Port',
       natPort: 'NAT Port',
       portType: 'Port Type'
+    },
+    kernel: {
+      forward: 'Forward'
     }
   },
   form: {

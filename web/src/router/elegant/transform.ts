@@ -186,6 +186,7 @@ const routeMap: RouteMap = {
   "route_snat": "/route/snat",
   "system": "/system",
   "system_basic": "/system/basic",
+  "system_kernel": "/system/kernel",
   "system_shell": "/system/shell",
   "user-center": "/user-center"
 };

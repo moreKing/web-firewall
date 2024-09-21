@@ -34,6 +34,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   route_limit: () => import("@/views/route/limit/index.vue"),
   route_snat: () => import("@/views/route/snat/index.vue"),
   system_basic: () => import("@/views/system/basic/index.vue"),
+  system_kernel: () => import("@/views/system/kernel/index.vue"),
   system_shell: () => import("@/views/system/shell/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
 };

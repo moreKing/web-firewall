@@ -6,6 +6,7 @@ package logic
 
 import (
 	_ "server/internal/logic/bizctx"
+	_ "server/internal/logic/kernel"
 	_ "server/internal/logic/middleware"
 	_ "server/internal/logic/nft"
 	_ "server/internal/logic/session"

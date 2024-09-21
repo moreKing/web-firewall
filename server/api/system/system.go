@@ -23,6 +23,8 @@ type ISystemV1 interface {
 	GetAuthConf(ctx context.Context, req *v1.GetAuthConfReq) (res *v1.GetAuthConfRes, err error)
 	SetAuthConf(ctx context.Context, req *v1.SetAuthConfReq) (res *v1.SetAuthConfRes, err error)
 	CheckPort(ctx context.Context, req *v1.CheckPortReq) (res *v1.CheckPortRes, err error)
+	GetKernel(ctx context.Context, req *v1.GetKernelReq) (res *v1.GetKernelRes, err error)
+	SetKernel(ctx context.Context, req *v1.SetKernelReq) (res *v1.SetKernelRes, err error)
 	Shell(ctx context.Context, req *v1.ShellReq) (res *v1.ShellRes, err error)
 	GetSystemStatus(ctx context.Context, req *v1.GetSystemStatusReq) (res *v1.GetSystemStatusRes, err error)
 }

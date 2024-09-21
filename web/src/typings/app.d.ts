@@ -814,6 +814,9 @@ declare namespace App {
           skip: string;
           wsError: string;
         };
+        kernel: {
+          forward: string;
+        };
       };
       form: {
         required: string;
