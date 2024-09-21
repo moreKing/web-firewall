@@ -64,21 +64,33 @@ systemctl stop  firewalld
 默认账号密码：admin/admin
 
 ### docker部署
+
+构建项目镜像
+```bash
+# 拉取源代码
+git clone https://github.com/moreKing/web-firewall.git
+cd web-firewall
+# 构建镜像
+docker build -f ./server/manifest/docker/Dockerfile  -t web-firewall:latest .
+```
+
 docker使用必须以特权和host模式运行才能操作主机的网络配置
 ```bash
-docker run
-  -itd
-  --network host
-  --privileged 
-  -v /path/config:/web-firewall/manifest/config
-  web-firewall
+docker run -itd --network host --privileged -p 8000:8000 \
+-v /etc/sysctl.conf:/etc/sysctl.conf \
+-v  /proc:/host_proc \
+web-firewall
 ```
-`/path/config`目录内需要提供config.yaml配置文件和db.sqlite3初始化数据库文件
 
-配置中database的目录需要修改为
-```yaml
-link: "sqlite::@file(./manifest/config/db.sqlite3)"
+数据持久化需要映射以下几个目录
+
+```bash
+-v /path/config:/web-firewall/manifest/config  # 配置文件 docker模式下 默认数据库文件也在此目录
+-v /path/log:/web-firewall/log  # 日志文件 所有日志文件均会在此目录下
+-v /path/resources/template:/web-firewall/resources/template  # 模板文件，用户可以自定义邮件样式
 ```
+
+`/path/config`目录内需要提供config.yaml配置文件和db.sqlite3初始化数据库文件，可先运行一个镜像从里面对应位置拷贝出里面的默认文件，然后修改配置文件即可
 
 ### 项目截图
 

@@ -16,10 +16,9 @@ const rules = computed<any>(() => {
   return {
     forward: [
       {
-        type: 'bool',
-
-        required: true,
+        type: 'enum',
         message: $t('form.required'),
+        enum: [true, false],
         trigger: 'change'
       }
     ]

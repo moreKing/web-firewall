@@ -23,7 +23,9 @@ COPY --from=builder /building/server /web-firewall/server
 COPY ./server/resource /web-firewall/resource
 COPY --from=building /building/dist /web-firewall/resource/public/html
 COPY ./server/manifest/config /web-firewall/manifest/config 
-RUN rm /web-firewall/manifest/config/config.yaml && mv /web-firewall/manifest/config/config.yaml.docker /web-firewall/manifest/config/config.yaml
+RUN rm -rf /web-firewall/manifest/config/config.yaml 
+RUN mv /web-firewall/manifest/config/config.yaml.docker /web-firewall/manifest/config/config.yaml
+COPY ./server/resource/db.sqlite3.bak /web-firewall/manifest/config/db.sqlite3
 
 VOLUME [ "/web-firewall/manifest/config", "/web-firewall/log" ]
 ENTRYPOINT ["/web-firewall/server"]
