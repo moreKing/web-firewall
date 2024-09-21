@@ -21,6 +21,15 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
+var shellMode = "sh"
+
+func init() {
+	shell := g.Cfg().MustGet(context.Background(), "server.shellMode", "sh").String()
+	if shell == "bash" {
+		shellMode = "bash"
+	}
+}
+
 // Shell 定义一个结构体 方便保存各种连接信息
 type Shell struct {
 	Websocket *websocket.Conn
@@ -49,7 +58,7 @@ func NewShell(websocket *websocket.Conn, ctx1 context.Context) (shell *Shell, er
 		}
 	}()
 	// Create arbitrary command.
-	c := exec.Command("bash")
+	c := exec.Command(shellMode)
 
 	// Start the command with a pty.
 	homeDir, err := os.UserHomeDir()

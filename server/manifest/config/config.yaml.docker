@@ -11,6 +11,7 @@ server:
   indexFiles: [ "index.html", "main.html" ]
   accessLogEnabled: true
   #  shell操作日志存放路径
+  shellMode: sh
   shellLog: /web-firewall/log/shell
 
   logger:

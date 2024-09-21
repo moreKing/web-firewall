@@ -11,6 +11,7 @@ server:
   indexFiles: [ "index.html", "main.html" ]
   accessLogEnabled: true
   #  shell操作日志存放路径
+  shellMode: bash # shell模式 仅支持 bash sh两种，设置成其他的无效默认sh
   shellLog: /var/log/web-firewall
 
   logger:
