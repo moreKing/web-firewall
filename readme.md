@@ -76,7 +76,7 @@ docker build -f ./server/manifest/docker/Dockerfile  -t web-firewall:latest .
 
 docker使用必须以特权和host模式运行才能操作主机的网络配置
 ```bash
-docker run -itd --network host --privileged -p 8000:8000 \
+docker run -itd --network host --privileged \
 -v /etc/sysctl.conf:/etc/sysctl.conf \
 -v  /proc:/host_proc \
 web-firewall
@@ -86,7 +86,7 @@ web-firewall
 
 ```bash
 -v /path/config:/web-firewall/manifest/config  # 配置文件 docker模式下 默认数据库文件也在此目录
--v /path/log:/web-firewall/log  # 日志文件 所有日志文件均会在此目录下
+-v /path/log:/web-firewall/log  # 日志文件目录 所有日志文件均会在此目录下
 -v /path/resources/template:/web-firewall/resources/template  # 模板文件，用户可以自定义邮件样式
 ```
 
