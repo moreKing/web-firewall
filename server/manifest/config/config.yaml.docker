@@ -11,10 +11,10 @@ server:
   indexFiles: [ "index.html", "main.html" ]
   accessLogEnabled: true
   #  shell操作日志存放路径
-  shellLog: /var/log/web-firewall
+  shellLog: ./log/shell
 
   logger:
-    #path:                  "./log/"   # 日志文件路径。默认为空，表示关闭，仅输出到终端
+    path:                  "./log/access"   # 日志文件路径。默认为空，表示关闭，仅输出到终端
     # file:                  "" # 日志文件格式。默认为"{Y-m-d}.log"
     # prefix:                ""            # 日志内容输出前缀。默认为空
     level:                 "info"         # 日志输出级别
@@ -28,7 +28,7 @@ server:
 
 
 logger:
-  path: "./log/"           # 日志文件路径。默认为空，表示关闭，仅输出到终端
+  path: "./log/server"           # 日志文件路径。默认为空，表示关闭，仅输出到终端
   file: "{Y-m-d}.log"         # 日志文件格式。默认为"{Y-m-d}.log"
   prefix: ""                    # 日志内容输出前缀。默认为空
   level: "all"                 # 日志输出级别，不区分大小写 all 所有日志 DEBU < INFO < NOTI < WARN < ERRO < CRIT
@@ -45,22 +45,13 @@ logger:
   stdoutColorDisabled: false                 # 关闭终端的颜色打印。默认开启
   writerColorEnable: false                 # 日志文件是否带上颜色。默认false，表示不带颜色
 
-firewall:
-  type: nftables # 配置防火墙类型，可选参数 nftables/iptables
-  chainPriority: #配置链的优先级，仅type为 nftables时生效
-    input: 0
-    output: 100
-    forward: 100
-    prerouting: 100
-    postrouting: 100
-
 database:
   logger:
     path: "./log/sql"
     level: "all"
     stdout: true
   default:
-    link:  "sqlite::@file(./resource/db.sqlite3)"
+    link:  "sqlite::@file(./manifest/config/db.sqlite3)"
   debug: true
 
 

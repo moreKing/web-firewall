@@ -1,6 +1,9 @@
 package nftables
 
-import "context"
+import (
+	"context"
+	"github.com/gogf/gf/v2/frame/g"
+)
 
 var tableName = &Table{
 	Name: "web-firewall",
@@ -50,6 +53,7 @@ func init() {
 
 	//	创建链
 	//入站策略 input链
+	inputPriority := g.Cfg().MustGet(context.Background(), "firewall.chainPriority.input", 100).Int()
 	inputBasic := Chain{
 		Name:   ChainName[INPUT_BASIC],
 		Table:  tableName.Name,
@@ -57,7 +61,7 @@ func init() {
 		//Comment:  "入站规则策略",
 		Type:     "filter",
 		Hook:     "input",
-		Priority: 100,
+		Priority: inputPriority,
 		Policy:   "drop",
 	}
 	err = inputBasic.Add()
@@ -148,6 +152,7 @@ func init() {
 	}
 
 	// 出站策略 output链
+	outputPriority := g.Cfg().MustGet(context.Background(), "firewall.chainPriority.output", 100).Int()
 	outputBasic := Chain{
 		Name:   ChainName[OUTPUT_BASIC],
 		Table:  tableName.Name,
@@ -155,7 +160,7 @@ func init() {
 		//Comment:  "出站规则策略",
 		Type:     "filter",
 		Hook:     "output",
-		Priority: 100,
+		Priority: outputPriority,
 		Policy:   "accept",
 	}
 	err = outputBasic.Add()
@@ -219,6 +224,7 @@ func init() {
 	}
 
 	//DNAT prerouting链
+	preroutingPriority := g.Cfg().MustGet(context.Background(), "firewall.chainPriority.prerouting", 100).Int()
 	dnat := Chain{
 		Name:   ChainName[DNAT],
 		Table:  tableName.Name,
@@ -226,7 +232,7 @@ func init() {
 		//Comment:  "目的地址转换",
 		Type:     "nat",
 		Hook:     "prerouting",
-		Priority: 100,
+		Priority: preroutingPriority,
 		Policy:   "accept",
 	}
 	err = dnat.Add()
@@ -235,6 +241,7 @@ func init() {
 	}
 
 	//SNAT postrouting
+	postroutingPriority := g.Cfg().MustGet(context.Background(), "firewall.chainPriority.postrouting", 100).Int()
 	snat := Chain{
 		Name:   ChainName[SNAT],
 		Table:  tableName.Name,
@@ -242,7 +249,7 @@ func init() {
 		//Comment:  "源地址转换",
 		Type:     "nat",
 		Hook:     "postrouting",
-		Priority: 100,
+		Priority: postroutingPriority,
 		Policy:   "accept",
 	}
 	err = snat.Add()
@@ -251,6 +258,7 @@ func init() {
 	}
 
 	//todo 转发策略（作为网关时）forward 链 暂时不实现
+	forwardPriority := g.Cfg().MustGet(context.Background(), "firewall.chainPriority.forward", 100).Int()
 	forwardBasic := Chain{
 		Name:   ChainName[FORWARD_BASIC],
 		Table:  tableName.Name,
@@ -258,7 +266,7 @@ func init() {
 		//Comment:  "转发规则策略",
 		Type:     "filter",
 		Hook:     "forward",
-		Priority: 0,
+		Priority: forwardPriority,
 		Policy:   "accept",
 	}
 	err = forwardBasic.Add()
