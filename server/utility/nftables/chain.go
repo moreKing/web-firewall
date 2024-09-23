@@ -3,6 +3,7 @@ package nftables
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 )
 
 // 关于链的一些操作
@@ -25,7 +26,7 @@ func (c *Chain) Add() error {
 		command := fmt.Sprintf(`add chain %s %s %s`,
 			c.Family, c.Table, c.Name)
 
-		if c.Comment != "" {
+		if strings.TrimSpace(c.Comment) != "" {
 			command += fmt.Sprintf(` { comment "%s" ; }`, c.Comment)
 		}
 
@@ -40,8 +41,13 @@ func (c *Chain) Add() error {
 
 	}
 
-	command := fmt.Sprintf(`add chain %s %s %s { type %s hook %s priority %d ; policy %s; comment "%s" ; }`,
-		c.Family, c.Table, c.Name, c.Type, c.Hook, c.Priority, c.Policy, c.Comment)
+	command := fmt.Sprintf(`add chain %s %s %s { type %s hook %s priority %d ; policy %s; }`,
+		c.Family, c.Table, c.Name, c.Type, c.Hook, c.Priority, c.Policy)
+
+	if strings.TrimSpace(c.Comment) != "" {
+		command += fmt.Sprintf(` { comment "%s" ; }`, c.Comment)
+	}
+
 	cmd := exec.Command("nft", command)
 	output, err := cmd.CombinedOutput()
 	fmt.Println(string(output))

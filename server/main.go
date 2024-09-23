@@ -6,7 +6,6 @@ import (
 
 	_ "server/internal/logic"
 
-
 	"github.com/gogf/gf/v2/os/gctx"
 
 	"server/internal/cmd"
