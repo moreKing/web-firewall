@@ -103,7 +103,7 @@ func update(key, value string) error {
 
 	}
 
-	list = append(list, fmt.Sprintf("%s=%s", key, value))
+	list = append(list, fmt.Sprintf("%s=%s", key, value), "\n")
 
 	// 写入文件
 WRITE:

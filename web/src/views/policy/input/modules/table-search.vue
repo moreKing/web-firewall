@@ -90,11 +90,11 @@ const onlyAllowNumber = (value: string) => {
               },
               {
                 label: 'icmp',
-                value: 'icmp type'
+                value: 'icmp'
               },
               {
                 label: 'ct state',
-                value: 'ct state'
+                value: 'ct'
               }
             ]"
             @update:value="search"
@@ -134,7 +134,7 @@ const onlyAllowNumber = (value: string) => {
         </NFormItemGi>
 
         <NFormItemGi
-          v-if="model.protocol === 'icmp type'"
+          v-if="model.protocol === 'icmp'"
           span="24 s:24 m:12 l:8"
           :label="$t('page.firewallPolicy.option')"
           path="port"
@@ -158,7 +158,7 @@ const onlyAllowNumber = (value: string) => {
         </NFormItemGi>
 
         <NFormItemGi
-          v-if="model.protocol === 'ct state'"
+          v-if="model.protocol === 'ct'"
           span="24 s:24 m:12 l:8"
           :label="$t('page.firewallPolicy.option')"
           path="port"

@@ -3,7 +3,7 @@ import type { Ref } from 'vue';
 import { computed, h, ref } from 'vue';
 import { NSpace, NTag } from 'naive-ui';
 import dayjs from 'dayjs';
-import { deleteFirewallPolicy, getFirewallPolicyList } from '@/service/api';
+import { deleteOutputPolicy, getOutputPolicyList } from '@/service/api';
 import { $t } from '@/locales';
 import CustomTableHeader from '@/components/table/custom-table-header.vue';
 import { ADD_FIREWALL_POLICY } from '@/utils/permissions_consts';
@@ -14,7 +14,7 @@ import AddData from './modules/add-data.vue';
 import UpdateData from './modules/update-data.vue';
 import UpdatePosition from './modules/update-position.vue';
 
-const chain = 2;
+
 interface SearchParams {
   protocol: string;
   port: string;
@@ -65,7 +65,7 @@ function updateModalClick(row: any, method: string) {
       positiveText: $t('common.confirm'),
       negativeText: $t('common.cancel'),
       onPositiveClick: async () => {
-        const { error } = await deleteFirewallPolicy(row.id);
+        const { error } = await deleteOutputPolicy(row.id);
         if (error) return;
         getData();
         window.$message?.success($t('common.deleteSuccess'));
@@ -82,12 +82,10 @@ const columns = computed<any>(() => [
     key: 'id',
     title: 'id',
     align: 'center',
-    show: true,
     width: 64
   },
 
   {
-    show: true,
     key: 'comment',
     title: $t('datatable.description'),
     align: 'center',
@@ -95,20 +93,26 @@ const columns = computed<any>(() => [
   },
 
   {
-    show: true,
-    key: 'expr[1].protocol',
+    key: 'protocol',
     title: $t('page.firewallPolicy.protocol'),
     align: 'center',
     minWidth: 100
   },
 
   {
-    show: true,
-    key: 'expr[1].value',
     title: $t('page.firewallPolicy.policy'),
     align: 'center',
     minWidth: 200,
     render(row: any) {
+      let v = '';
+      if (row.protocol === 'tcp' || row.protocol === 'udp') {
+        v = row.port;
+      } else if (row.protocol === 'icmp') {
+        v = row.icmp;
+      } else if (row.protocol === 'ct') {
+        v = row.ct;
+      }
+
       return h(
         NSpace,
         {
@@ -117,16 +121,13 @@ const columns = computed<any>(() => [
         },
         {
           default: () =>
-            row.expr[1].value.split(',').map((x: string) => {
-              let tmp = x;
-              if (row.expr[1].field === 'vmap') {
-                tmp = x.split(':')[0];
-              }
+            v.split(',').map((x: string) => {
+              const tmp = x;
               return h(
                 NTag,
                 {
                   bordered: false,
-                  type: row.expr[2].policy === 'accept' ? 'success' : 'error'
+                  type: row.policy === 'accept' ? 'success' : 'error'
                 },
                 {
                   default: () => tmp
@@ -139,10 +140,8 @@ const columns = computed<any>(() => [
   },
 
   {
-    show: true,
-    key: 'expr[0].value',
     align: 'center',
-    title: $t('page.firewallPolicy.sourceIp'),
+    title: $t('page.firewallPolicy.destIp'),
     minWidth: 200,
     render(row: any) {
       return h(
@@ -153,12 +152,12 @@ const columns = computed<any>(() => [
         },
         {
           default: () => {
-            if (!row.expr[0].value || row.expr[0].value.trim() === '') {
+            if (!row.ip || row.ip.trim() === '') {
               return h(
                 NTag,
                 {
                   bordered: false,
-                  type: row.expr[2].policy === 'accept' ? 'success' : 'error'
+                  type: row.policy === 'accept' ? 'success' : 'error'
                 },
                 {
                   default: () => $t('page.firewallPolicy.allIp')
@@ -166,12 +165,12 @@ const columns = computed<any>(() => [
               );
             }
 
-            return row.expr[0].value.split(',').map((x: string) => {
+            return row.ip.split(',').map((x: string) => {
               return h(
                 NTag,
                 {
                   bordered: false,
-                  type: row.expr[2].policy === 'accept' ? 'success' : 'error'
+                  type: row.policy === 'accept' ? 'success' : 'error'
                 },
                 {
                   default: () => x
@@ -185,13 +184,11 @@ const columns = computed<any>(() => [
   },
 
   {
-    show: true,
-    key: 'expr[2].policy',
     title: $t('page.firewallPolicy.action'),
     align: 'center',
     minWidth: 100,
     render(row: any) {
-      switch (row.expr[2].policy) {
+      switch (row.policy) {
         case 'accept':
           return h(
             NTag,
@@ -232,7 +229,6 @@ const columns = computed<any>(() => [
   },
 
   {
-    show: true,
     title: $t('datatable.createTime'),
     key: 'createdAt',
     align: 'center',
@@ -247,7 +243,6 @@ const columns = computed<any>(() => [
   },
 
   {
-    show: true,
     title: $t('datatable.action'),
     key: 'actions',
     align: 'center',
@@ -255,7 +250,6 @@ const columns = computed<any>(() => [
     render: (row: any) => createAction(row, updateModalClick)
   }
 ]);
-
 const pagination = ref<any>({
   page: 1,
   pageSize: 20,
@@ -276,15 +270,19 @@ const pagination = ref<any>({
   }
 });
 
+const filterData = ref<any>([]);
+const tableRef = ref<any>(null);
+
 async function getData() {
   loading.value = true;
-  const { data: res, error } = await getFirewallPolicyList(chain);
+  const { data: res, error } = await getOutputPolicyList();
   loading.value = false;
   if (error) return;
 
   if (!res.data) {
     data = [];
     pagination.value.itemCount = 0;
+    filterData.value = [];
     return;
   }
   data = res.data;
@@ -300,8 +298,7 @@ function handleAdd() {
   showAddData.value = true;
 }
 
-const filterData = ref<any>([]);
-const tableRef = ref<any>(null);
+
 
 //  过滤
 function filterDataFn() {
@@ -313,7 +310,7 @@ function filterDataFn() {
   filterData.value = data.filter((item: any) => {
     // 判断协议
     if (listParams.value.protocol && listParams.value.protocol !== '') {
-      if (listParams.value.protocol !== item.expr[1].protocol) {
+      if (listParams.value.protocol !== item.protocol) {
         return false;
       }
       // 判断协议类型
@@ -321,7 +318,7 @@ function filterDataFn() {
         case 'tcp':
           // 判断端口
           if (listParams.value.port && listParams.value.port !== '') {
-            const ports = item.expr[1].value.split(',');
+            const ports = item.port.split(',');
             let tmpState = false;
             for (let i = 0; i < ports.length; i += 1) {
               // eslint-disable-next-line max-depth
@@ -339,7 +336,7 @@ function filterDataFn() {
         case 'udp':
           // 判断端口
           if (listParams.value.port && listParams.value.port !== '') {
-            const ports = item.expr[1].value.split(',');
+            const ports = item.port.split(',');
             let tmpState = false;
             for (let i = 0; i < ports.length; i += 1) {
               // eslint-disable-next-line max-depth
@@ -354,14 +351,14 @@ function filterDataFn() {
           }
           break;
 
-        case 'ct state':
+        case 'ct':
           // 判断 tcp状态
           if (listParams.value.ctState && listParams.value.ctState !== '') {
-            const vs = item.expr[1].value.split(',');
+            const vs = item.ct.split(',');
             let tmpState = false;
             for (let i = 0; i < vs.length; i += 1) {
               // eslint-disable-next-line max-depth
-              if (listParams.value.ctState.trim() === vs[i].split(':')[0].trim()) {
+              if (listParams.value.ctState.trim() === vs[i].trim()) {
                 tmpState = true;
                 break;
               }
@@ -372,15 +369,15 @@ function filterDataFn() {
           }
           break;
 
-        case 'icmp type':
+        case 'icmp':
           // 判断 icmp状态
 
           if (listParams.value.icmp && listParams.value.icmp !== '') {
-            const vs = item.expr[1].value.split(',');
+            const vs = item.icmp.split(',');
             let tmpState = false;
             for (let i = 0; i < vs.length; i += 1) {
               // eslint-disable-next-line max-depth
-              if (listParams.value.icmp.trim() === vs[i].split(':')[0].trim()) {
+              if (listParams.value.icmp.trim() === vs[i].trim()) {
                 tmpState = true;
                 break;
               }
@@ -398,11 +395,11 @@ function filterDataFn() {
     }
 
     // 判断源地址
-    if (listParams.value.ip && listParams.value.ip !== '' && item.expr[0].value && item.expr[0].value !== '') {
+    if (listParams.value.ip && listParams.value.ip !== '' && item.ip && item.ip !== '') {
       // 判断ip 是否有效，有效才进行过滤
       if (checkIpAddr(listParams.value.ip)) {
         // 判断是否在范围&& checkIpInNet()
-        const tmpIps = item.expr[0].value.split(',');
+        const tmpIps = item.ip.split(',');
 
         let tmpIpState = false;
         for (let i = 0; i < tmpIps.length; i += 1) {
@@ -418,7 +415,7 @@ function filterDataFn() {
 
     // 判断策略
     if (listParams.value.policy && listParams.value.policy !== '') {
-      if (listParams.value.policy !== item.expr[2].policy) {
+      if (listParams.value.policy !== item.policy) {
         return false;
       }
     }

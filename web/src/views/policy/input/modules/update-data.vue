@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { updateFirewallPolicy } from '@/service/api';
+import { updateInputPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
@@ -9,14 +9,8 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-interface Rule {
-  id: number;
-  comment: string;
-  expr: any[];
-}
-
 const props = defineProps<{
-  row: Rule;
+  row: any;
 }>();
 
 const emit = defineEmits<{
@@ -104,54 +98,15 @@ async function onSubmit() {
   //  提交数据
   loading.value = true;
 
-  const match = {
-    type: 'match',
-    protocol: formValue.value.protocol,
-    field: '',
-    Value: ''
-  };
-
-  if (match.protocol === 'tcp' || match.protocol === 'udp') {
-    match.field = 'dport';
-    match.Value = formValue.value.port;
-  }
-
-  if (formValue.value.protocol === 'icmp type') {
-    match.field = 'vmap';
-    // match.Value = formValue.value.port;
-    match.Value = formValue.value.pingOptions
-      .map((item: string) => {
-        return `${item} : ${formValue.value.policy}`;
-      })
-      .join(', ');
-  }
-
-  if (formValue.value.protocol === 'ct state') {
-    match.field = 'vmap';
-    // match.Value = formValue.value.port;
-    match.Value = formValue.value.ctStateOptions
-      .map((item: string) => {
-        return `${item} : ${formValue.value.policy}`;
-      })
-      .join(', ');
-  }
-
-  const { error } = await updateFirewallPolicy({
+  const { error } = await updateInputPolicy({
     id: props.row.id,
     comment: formValue.value.comment,
-    expr: [
-      {
-        type: 'match',
-        protocol: 'ip',
-        field: 'saddr',
-        value: formValue.value.limitIp ? formValue.value.ip : ''
-      },
-      match,
-      {
-        type: 'policy',
-        policy: formValue.value.policy
-      }
-    ]
+    ip: formValue.value.ip,
+    policy: formValue.value.policy,
+    port: formValue.value.port,
+    protocol: formValue.value.protocol,
+    ct: formValue.value.ctStateOptions.join(','),
+    icmp: formValue.value.pingOptions.join(',')
   });
   loading.value = false;
   if (error) return;
@@ -161,28 +116,15 @@ async function onSubmit() {
 
 async function enterModal() {
   formValue.value = {
-    protocol: props.row.expr[1].protocol,
-    port: props.row.expr[1].value,
-    limitIp: !(props.row.expr[0].value === '' || !props.row.expr[0].value),
-    ip: props.row.expr[0].value,
-    policy: props.row.expr[2].policy,
+    protocol: props.row.protocol,
+    port: props.row.port,
+    limitIp: !(props.row.ip === '' || !props.row.ip),
+    ip: props.row.ip,
+    policy: props.row.policy,
     comment: props.row.comment,
-    pingOptions: [],
-    ctStateOptions: []
+    pingOptions: props.row.icmp.split(','),
+    ctStateOptions: props.row.ct.split(',')
   };
-
-  if (props.row.expr[1].protocol === 'ct state') {
-    formValue.value.ctStateOptions = props.row.expr[1].value
-      .split(',')
-      .map((item: string) => item.split(':')[0].trim());
-
-    formValue.value.port = '';
-  }
-
-  if (props.row.expr[1].protocol === 'icmp type') {
-    formValue.value.pingOptions = props.row.expr[1].value.split(',').map((item: string) => item.split(':')[0].trim());
-    formValue.value.port = '';
-  }
 
   loading.value = false;
 }
@@ -227,11 +169,11 @@ async function enterModal() {
               },
               {
                 label: 'icmp',
-                value: 'icmp type'
+                value: 'icmp'
               },
               {
                 label: 'ct state',
-                value: 'ct state'
+                value: 'ct'
               }
             ]"
           />
@@ -250,11 +192,7 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem
-          v-if="formValue.protocol === 'ct state'"
-          :label="$t('page.firewallPolicy.option')"
-          path="ctStateOptions"
-        >
+        <NFormItem v-if="formValue.protocol === 'ct'" :label="$t('page.firewallPolicy.option')" path="ctStateOptions">
           <NCheckboxGroup v-model:value="formValue.ctStateOptions">
             <NSpace>
               <NCheckbox value="new" :label="$t('page.firewallPolicy.newTcp')" />
@@ -266,11 +204,7 @@ async function enterModal() {
           </NCheckboxGroup>
         </NFormItem>
 
-        <NFormItem
-          v-if="formValue.protocol === 'icmp type'"
-          :label="$t('page.firewallPolicy.option')"
-          path="pingOptions"
-        >
+        <NFormItem v-if="formValue.protocol === 'icmp'" :label="$t('page.firewallPolicy.option')" path="pingOptions">
           <NCheckboxGroup v-model:value="formValue.pingOptions">
             <NSpace>
               <NCheckbox value="echo-reply" :label="$t('page.firewallPolicy.pingReply')" />

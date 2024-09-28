@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { updateFirewallPolicy } from '@/service/api';
+import { updateInputLimitPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
@@ -9,16 +9,8 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-const chain = 5;
-
-interface Rule {
-  id: number;
-  comment: string;
-  expr: any[];
-}
-
 const props = defineProps<{
-  row: Rule;
+  row: any;
 }>();
 
 const emit = defineEmits<{
@@ -33,7 +25,7 @@ const formValue = ref<any>({
   limitIp: false,
   ip: '',
   limit: null,
-  limitSpeed: 'mbytes/second',
+  speed: 'mb/s',
   comment: ''
 });
 
@@ -100,7 +92,7 @@ function initData() {
     limitIp: false,
     ip: '',
     limit: null,
-    limitSpeed: 'mbytes/second',
+    speed: 'mb/s',
     comment: ''
   };
   emit('close');
@@ -111,42 +103,10 @@ async function onSubmit() {
   //  提交数据
   loading.value = true;
 
-  const match = {
-    type: 'match',
-    protocol: 'tcp',
-    field: '',
-    Value: ''
-  };
-
-  if (formValue.value.protocol === 'tcp' || formValue.value.protocol === 'udp') {
-    match.field = 'dport';
-    match.protocol = formValue.value.protocol;
-    match.Value = formValue.value.port;
-  }
-
-  const { error } = await updateFirewallPolicy({
+  const { error } = await updateInputLimitPolicy({
     id: props.row.id,
-    chain,
-    comment: formValue.value.comment,
-    expr: [
-      {
-        type: 'match',
-        protocol: 'ip',
-        field: 'saddr',
-        Value: formValue.value.limitIp ? formValue.value.ip : ''
-      },
-      match,
-      {
-        type: 'match',
-        protocol: 'limit',
-        field: 'rate over',
-        Value: `${formValue.value.limit} ${formValue.value.limitSpeed}`
-      },
-      {
-        type: 'policy',
-        policy: 'drop'
-      }
-    ]
+    ...formValue.value,
+    ip: formValue.value.limitIp ? formValue.value.ip : ''
   });
   loading.value = false;
   if (error) return;
@@ -155,31 +115,7 @@ async function onSubmit() {
 }
 
 async function enterModal() {
-  formValue.value = {
-    protocol: '',
-    port: props.row.expr[1].value,
-    limitIp: !(props.row.expr[0].value === '' || !props.row.expr[0].value),
-    ip: props.row.expr[0].value,
-    comment: props.row.comment,
-    limit: null,
-    limitSpeed: ''
-  };
-
-  if (props.row.expr[1].protocol === 'tcp' || props.row.expr[1].protocol === 'udp') {
-    if (props.row.expr[1].value && props.row.expr[1].value !== '') {
-      formValue.value.protocol = props.row.expr[1].protocol;
-      formValue.value.port = props.row.expr[1].value;
-    } else {
-      formValue.value.protocol = 'all';
-    }
-  }
-
-  if (props.row.expr[2].value) {
-    const tmpLimit = props.row.expr[2].value.trim().split(/\s+/);
-    formValue.value.limit = Number.parseInt(tmpLimit[0].trim(), 10);
-    formValue.value.limitSpeed = tmpLimit[1].trim();
-  }
-
+  formValue.value = { ...props.row, limitIp: props.row.ip !== '' };
   loading.value = false;
 }
 </script>
@@ -270,24 +206,24 @@ async function enterModal() {
             <NInputNumber v-model:value="formValue.limit" />
 
             <NSelect
-              v-model:value="formValue.limitSpeed"
+              v-model:value="formValue.speed"
               class="w-215px"
               :options="[
                 {
                   label: 'kb/s',
-                  value: 'kbytes/second'
+                  value: 'kb/s'
                 },
                 {
                   label: 'mb/s',
-                  value: 'mbytes/second'
+                  value: 'mb/s'
                 },
                 {
                   label: 'kb/m',
-                  value: 'kbytes/minute'
+                  value: 'kb/m'
                 },
                 {
                   label: 'mb/m',
-                  value: 'mbytes/minute'
+                  value: 'mb/m'
                 }
               ]"
             />

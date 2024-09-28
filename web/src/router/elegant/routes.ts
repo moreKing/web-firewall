@@ -272,7 +272,7 @@ export const generatedRoutes: GeneratedRoute[] = [
         meta: {
           title: 'system_kernel',
           i18nKey: 'route.system_kernel',
-          order:2,
+          order: 2,
           localIcon: 'menu-system_kernel'
         }
       },

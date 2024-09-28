@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { changeFirewallPolicyPosition } from '@/service/api';
+import { changeOutputPolicyPosition } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
@@ -88,7 +88,7 @@ async function onSubmit() {
   //  提交数据
   loading.value = true;
 
-  const { error } = await changeFirewallPolicyPosition({
+  const { error } = await changeOutputPolicyPosition({
     id: props.row.id,
     add: !(formValue.value.add === 1 || formValue.value.add === 3),
     position: formValue.value.add > 2 ? formValue.value.position : 0

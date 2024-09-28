@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { addFirewallPolicy } from '@/service/api';
+import { addOutputPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
@@ -9,7 +9,7 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-const chain = 2;
+// const chain = 2;
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -100,56 +100,16 @@ async function onSubmit() {
   //  提交数据
   loading.value = true;
 
-  const match = {
-    type: 'match',
-    protocol: formValue.value.protocol,
-    field: '',
-    Value: ''
-  };
-
-  if (match.protocol === 'tcp' || match.protocol === 'udp') {
-    match.field = 'dport';
-    match.Value = formValue.value.port;
-  }
-
-  if (formValue.value.protocol === 'icmp type') {
-    match.field = 'vmap';
-    // match.Value = formValue.value.port;
-    match.Value = formValue.value.pingOptions
-      .map((item: string) => {
-        return `${item} : ${formValue.value.policy}`;
-      })
-      .join(', ');
-  }
-
-  if (formValue.value.protocol === 'ct state') {
-    match.field = 'vmap';
-    // match.Value = formValue.value.port;
-    match.Value = formValue.value.ctStateOptions
-      .map((item: string) => {
-        return `${item} : ${formValue.value.policy}`;
-      })
-      .join(', ');
-  }
-
-  const { error } = await addFirewallPolicy({
-    chain,
+  const { error } = await addOutputPolicy({
     comment: formValue.value.comment,
     add: !(formValue.value.add === 1 || formValue.value.add === 3),
     position: formValue.value.add > 2 ? formValue.value.position : 0,
-    expr: [
-      {
-        type: 'match',
-        protocol: 'ip',
-        field: 'daddr',
-        Value: formValue.value.limitIp ? formValue.value.ip : ''
-      },
-      match,
-      {
-        type: 'policy',
-        policy: formValue.value.policy
-      }
-    ]
+    ip: formValue.value.ip,
+    policy: formValue.value.policy,
+    port: formValue.value.port,
+    protocol: formValue.value.protocol,
+    ct: formValue.value.ctStateOptions.join(','),
+    icmp: formValue.value.pingOptions.join(',')
   });
   loading.value = false;
   if (error) return;
@@ -281,7 +241,7 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.sourceIp')" path="limitIp">
+        <NFormItem :label="$t('page.firewallPolicy.destIp')" path="limitIp">
           <NRadioGroup v-model:value="formValue.limitIp" name="radiogroup">
             <NSpace>
               <NRadio :value="false">

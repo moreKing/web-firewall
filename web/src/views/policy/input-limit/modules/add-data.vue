@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { addFirewallPolicy } from '@/service/api';
+import { addInputLimitPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
 const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
-
-const chain = 5;
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -20,15 +18,12 @@ const loading = ref(false);
 const formValue = ref({
   protocol: 'all',
   port: '',
-  pingOptions: [],
-  ctStateOptions: [],
   limitIp: false,
   ip: '',
   add: 1,
   position: 0,
-  policy: 'accept',
   limit: null,
-  limitSpeed: 'mbytes/second',
+  speed: 'mb/s',
   comment: ''
 });
 
@@ -92,15 +87,12 @@ function initData() {
   formValue.value = {
     protocol: 'all',
     port: '',
-    pingOptions: [],
-    ctStateOptions: [],
     limitIp: false,
     ip: '',
-    policy: 'accept',
     add: 1,
     position: 0,
     limit: null,
-    limitSpeed: 'mbytes/second',
+    speed: 'mb/s',
     comment: ''
   };
   emit('close');
@@ -111,43 +103,10 @@ async function onSubmit() {
   //  提交数据
   loading.value = true;
 
-  const match = {
-    type: 'match',
-    protocol: 'tcp',
-    field: '',
-    Value: ''
-  };
-
-  if (formValue.value.protocol === 'tcp' || formValue.value.protocol === 'udp') {
-    match.field = 'dport';
-    match.protocol = formValue.value.protocol;
-    match.Value = formValue.value.port;
-  }
-
-  const { error } = await addFirewallPolicy({
-    chain,
-    comment: formValue.value.comment,
+  const { error } = await addInputLimitPolicy({
+    ...formValue.value,
     add: !(formValue.value.add === 1 || formValue.value.add === 3),
-    position: formValue.value.add > 2 ? formValue.value.position : 0,
-    expr: [
-      {
-        type: 'match',
-        protocol: 'ip',
-        field: 'saddr',
-        Value: formValue.value.limitIp ? formValue.value.ip : ''
-      },
-      match,
-      {
-        type: 'match',
-        protocol: 'limit',
-        field: 'rate over',
-        Value: `${formValue.value.limit} ${formValue.value.limitSpeed}`
-      },
-      {
-        type: 'policy',
-        policy: 'drop'
-      }
-    ]
+    position: formValue.value.add > 2 ? formValue.value.position : 0
   });
   loading.value = false;
   if (error) return;
@@ -218,35 +177,6 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem
-          v-if="formValue.protocol === 'ct state'"
-          :label="$t('page.firewallPolicy.option')"
-          path="ctStateOptions"
-        >
-          <NCheckboxGroup v-model:value="formValue.ctStateOptions">
-            <NSpace>
-              <NCheckbox value="new" :label="$t('page.firewallPolicy.newTcp')" />
-              <NCheckbox value="established" :label="$t('page.firewallPolicy.establishedTcp')" />
-              <NCheckbox value="related" :label="$t('page.firewallPolicy.relatedTcp')" />
-              <NCheckbox value="untracked" :label="$t('page.firewallPolicy.untrackedTcp')" />
-              <NCheckbox value="invalid" :label="$t('page.firewallPolicy.invalidTcp')" />
-            </NSpace>
-          </NCheckboxGroup>
-        </NFormItem>
-
-        <NFormItem
-          v-if="formValue.protocol === 'icmp type'"
-          :label="$t('page.firewallPolicy.option')"
-          path="pingOptions"
-        >
-          <NCheckboxGroup v-model:value="formValue.pingOptions">
-            <NSpace>
-              <NCheckbox value="echo-reply" :label="$t('page.firewallPolicy.pingReply')" />
-              <NCheckbox value="echo-request" :label="$t('page.firewallPolicy.pingRequest')" />
-            </NSpace>
-          </NCheckboxGroup>
-        </NFormItem>
-
         <NFormItem :label="$t('page.firewallPolicy.position')" path="position">
           <NSpace :size="14" class="w-full">
             <NInputNumber v-if="formValue.add > 2" v-model:value="formValue.position" />
@@ -303,24 +233,24 @@ async function enterModal() {
             <NInputNumber v-model:value="formValue.limit" />
 
             <NSelect
-              v-model:value="formValue.limitSpeed"
+              v-model:value="formValue.speed"
               class="w-215px"
               :options="[
                 {
                   label: 'kb/s',
-                  value: 'kbytes/second'
+                  value: 'kb/s'
                 },
                 {
                   label: 'mb/s',
-                  value: 'mbytes/second'
+                  value: 'mb/s'
                 },
                 {
                   label: 'kb/m',
-                  value: 'kbytes/minute'
+                  value: 'kb/m'
                 },
                 {
                   label: 'mb/m',
-                  value: 'mbytes/minute'
+                  value: 'mb/m'
                 }
               ]"
             />
