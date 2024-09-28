@@ -291,6 +291,9 @@ const pagination = ref<any>({
   }
 });
 
+const filterData = ref<any>([]);
+const tableRef = ref<any>(null);
+
 async function getData() {
   loading.value = true;
   const { data: res, error } = await getFirewallPolicyList(chain);
@@ -300,6 +303,7 @@ async function getData() {
   if (!res.data) {
     data = [];
     pagination.value.itemCount = 0;
+    filterData.value = [];
     return;
   }
   data = res.data;
@@ -315,9 +319,6 @@ const showAddData = ref(false);
 function handleAdd() {
   showAddData.value = true;
 }
-
-const filterData = ref<any>([]);
-const tableRef = ref<any>(null);
 
 //  过滤
 function filterDataFn() {
