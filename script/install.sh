@@ -12,9 +12,6 @@ systemctl daemon-reload
 systemctl enable web-firewalld
 systemctl start web-firewalld
 
-cp web-firewalld/resource/bak.sqlite3  /usr/local/web-firewalld/resource/db.sqlite3
 mv /usr/local/web-firewalld/server /usr/local/web-firewalld/web-firewalld
 
 echo "Web Firewalld installed successfully."
-
-
