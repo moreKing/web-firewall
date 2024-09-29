@@ -31,8 +31,9 @@ cd $current_dir
 
 cd $current_dir/server
 go mod tidy
+echo 'server start  build'
 CGO_ENABLED=0 go build -o server
-
+echo 'server build success'
 
 cd $current_dir
 rm -rf build
@@ -48,5 +49,7 @@ cp -r ~/firewalld-web/dist build/web-firewalld/resource/public/html
 
 rm -rf $current_dir/build/web-firewalld/resource/*.sqlite3
 mv $current_dir/build/web-firewalld/resource/db.sqlite3.bak $current_dir/build/web-firewalld/resource/db.sqlite3
+rm -rf $current_dir/server/manifest/config/config.yaml
+mv $current_dir/server/manifest/config/config.yaml.prod $current_dir/server/manifest/config/config.yaml
 
 rm -rf ~/firewalld-web
