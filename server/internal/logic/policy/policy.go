@@ -15,7 +15,12 @@ func init() {
 }
 
 func New() service.IPolicy {
-	return &sPolicy{p: firewall.New()}
+	s := &sPolicy{p: firewall.New()}
+	err := s.Flush(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	return s
 }
 
 func (s *sPolicy) Flush(ctx context.Context) error {
