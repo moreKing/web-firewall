@@ -13,7 +13,6 @@ import (
 	"server/internal/controller/audit"
 	"server/internal/controller/home"
 	"server/internal/controller/login"
-	"server/internal/controller/nft"
 	"server/internal/controller/policy"
 	"server/internal/controller/public"
 	"server/internal/controller/route"
@@ -74,13 +73,6 @@ func register() func(ctx context.Context, parser *gcmd.Parser) (err error) {
 						private.Middleware(service.Middleware().ConfigLog)
 
 						// firewall 策略管理
-
-						private.Group("/firewall", func(u *ghttp.RouterGroup) {
-							u.Bind(
-								nft.NewV1(),
-							)
-						})
-
 						private.Group("/policy", func(u *ghttp.RouterGroup) {
 							u.Bind(
 								policy.NewV1(),

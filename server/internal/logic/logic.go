@@ -9,7 +9,6 @@ import (
 	_ "server/internal/logic/kernel"
 	_ "server/internal/logic/middleware"
 	_ "server/internal/logic/network"
-	_ "server/internal/logic/nft"
 	_ "server/internal/logic/policy"
 	_ "server/internal/logic/session"
 	_ "server/internal/logic/systemconfig"
