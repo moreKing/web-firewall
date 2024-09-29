@@ -1,0 +1,18 @@
+[Unit]
+Description=web-firewall service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/usr/local/web-firewalld
+ExecStart=/usr/local/web-firewalld/web-firewalld
+Restart=on-failure
+LimitNOFILE=1048576
+ExecStop=/sbin/nft delete table inet web-firewalld
+RestartSec=5
+StartLimitIntervalSec=10
+StartLimitBurst=5
+
+
+[Install]
+WantedBy=multi-user.target
