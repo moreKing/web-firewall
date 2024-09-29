@@ -31,3 +31,19 @@ func (s *sNetwork) GetNetwork() (*[]model.Network, error) {
 
 	return &network, nil
 }
+
+func (s *sNetwork) IsNetwork(interfaceName string) (ok bool, err error) {
+
+	network, err := s.GetNetwork()
+	if err != nil {
+		return false, err
+	}
+
+	for _, n := range *network {
+		if n.Name == interfaceName {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}

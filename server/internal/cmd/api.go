@@ -16,6 +16,7 @@ import (
 	"server/internal/controller/nft"
 	"server/internal/controller/policy"
 	"server/internal/controller/public"
+	"server/internal/controller/route"
 	"server/internal/controller/system"
 	"server/internal/global"
 	"server/internal/service"
@@ -83,6 +84,13 @@ func register() func(ctx context.Context, parser *gcmd.Parser) (err error) {
 						private.Group("/policy", func(u *ghttp.RouterGroup) {
 							u.Bind(
 								policy.NewV1(),
+							)
+						})
+
+						private.Group("/route", func(u *ghttp.RouterGroup) {
+							u.Middleware(service.Middleware().IsForward)
+							u.Bind(
+								route.NewV1(),
 							)
 						})
 

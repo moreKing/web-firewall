@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { updateFirewallPolicy } from '@/service/api';
+import { updateDnatPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpAddr, checkIpMask } from '@/utils/ip_check';
 
@@ -9,14 +9,8 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-interface Rule {
-  id: number;
-  comment: string;
-  expr: any[];
-}
-
 const props = defineProps<{
-  row: Rule;
+  row: any;
   network: any;
 }>();
 
@@ -39,8 +33,8 @@ interface FormValue {
   protocol: null | string;
   dipAny: boolean;
   dip: string;
-  tip: string;
-  ports: {
+  dnat: string;
+  port: {
     key: string;
     value: string;
   }[];
@@ -54,8 +48,8 @@ const formValue = ref<FormValue>({
   protocol: null,
   dipAny: true,
   dip: '',
-  tip: '',
-  ports: [],
+  dnat: '',
+  port: [],
   iif: '',
   add: 1,
   position: 0,
@@ -70,7 +64,7 @@ const rules = computed<any>(() => {
     iif: [defaultRequiredRule],
     protocol: [defaultRequiredRule],
 
-    ports: [
+    port: [
       {
         trigger: ['input', 'change'],
         type: 'array',
@@ -95,7 +89,7 @@ const rules = computed<any>(() => {
       }
     ],
 
-    tip: [
+    dnat: [
       {
         required: true,
         trigger: ['input', 'change'],
@@ -118,8 +112,8 @@ function initData() {
     protocol: null,
     dipAny: true,
     dip: '',
-    tip: '',
-    ports: [],
+    dnat: '',
+    port: [],
     iif: '',
     add: 1,
     position: 0,
@@ -132,38 +126,10 @@ async function onSubmit() {
   await validate();
   //  提交数据
   loading.value = true;
-  const expr: any = [];
 
-  expr.push({
-    type: 'match',
-    protocol: 'iif',
-    field: '',
-    Value: formValue.value.iif
-  });
-
-  if (!formValue.value.dipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'daddr',
-      Value: formValue.value.dip
-    });
-  }
-
-  const tps = formValue.value.ports.map((item: any) => {
-    return `${item.key} : ${formValue.value.tip} . ${item.value}`;
-  });
-  expr.push({
-    type: 'match',
-    protocol: 'dnat',
-    field: `ip to ${formValue.value.protocol} dport map`,
-    Value: tps.join(', ')
-  });
-
-  const { error } = await updateFirewallPolicy({
+  const { error } = await updateDnatPolicy({
     id: props.row.id,
-    comment: formValue.value.comment,
-    expr
+    ...formValue.value
   });
   loading.value = false;
   if (error) return;
@@ -172,39 +138,8 @@ async function onSubmit() {
 }
 
 async function enterModal() {
-  props.row.expr.forEach((item: any) => {
-    if (item.protocol === 'ip' && item.field === 'daddr') {
-      formValue.value.dipAny = false;
-      formValue.value.dip = item.value;
-      return;
-    }
-
-    if (item.protocol === 'iif') {
-      formValue.value.iif = item.value;
-      return;
-    }
-
-    if (item.protocol === 'dnat') {
-      if (item.field.includes(' tcp ')) {
-        formValue.value.protocol = 'tcp';
-      } else if (item.field.includes(' udp ')) {
-        formValue.value.protocol = 'udp';
-      } else {
-        formValue.value.protocol = null;
-      }
-    }
-
-    item.value.split(',').forEach((item2: any) => {
-      const [key, value] = item2.split(':');
-      formValue.value.ports.push({
-        key: key.trim(),
-        value: value.split(' . ')[1].trim()
-      });
-      formValue.value.tip = value.split(' . ')[0].trim();
-    });
-
-    // if (item.protocol === 'snat')
-  });
+  formValue.value = props.row;
+  formValue.value.dipAny = !formValue.value.dip;
 
   loading.value = false;
 }
@@ -278,13 +213,13 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.nat')" path="tip">
-          <NInput v-model:value="formValue.tip" />
+        <NFormItem :label="$t('page.firewallPolicy.nat')" path="dnat">
+          <NInput v-model:value="formValue.dnat" />
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.natPort')" path="ports">
+        <NFormItem :label="$t('page.firewallPolicy.natPort')" path="port">
           <NDynamicInput
-            v-model:value="formValue.ports"
+            v-model:value="formValue.port"
             item-style="margin-bottom: 0;"
             :on-create="() => ({ key: '', value: '' })"
           >
@@ -309,7 +244,7 @@ async function enterModal() {
                 <NFormItem
                   ignore-path-change
                   :show-label="false"
-                  :path="`ports[${index}].key`"
+                  :path="`port[${index}].key`"
                   :rule="{
                     trigger: ['input', 'change'],
                     validator(_rule: any, value: string) {
@@ -326,7 +261,7 @@ async function enterModal() {
                   }"
                 >
                   <NInput
-                    v-model:value="formValue.ports[index].key"
+                    v-model:value="formValue.port[index].key"
                     :placeholder="$t('page.firewallPolicy.destPort')"
                     @keydown.enter.prevent
                   />
@@ -337,7 +272,7 @@ async function enterModal() {
                 <NFormItem
                   ignore-path-change
                   :show-label="false"
-                  :path="`ports[${index}].value`"
+                  :path="`port[${index}].value`"
                   :rule="{
                     trigger: ['input', 'change'],
                     validator(_rule: any, value: string) {
@@ -354,7 +289,7 @@ async function enterModal() {
                   }"
                 >
                   <NInput
-                    v-model:value="formValue.ports[index].value"
+                    v-model:value="formValue.port[index].value"
                     :placeholder="$t('page.firewallPolicy.natPort')"
                     @keydown.enter.prevent
                   />

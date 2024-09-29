@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { updateFirewallPolicy } from '@/service/api';
+import { updateSnatPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpAddr, checkIpMask } from '@/utils/ip_check';
 
@@ -9,14 +9,8 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-interface Rule {
-  id: number;
-  comment: string;
-  expr: any[];
-}
-
 const props = defineProps<{
-  row: Rule;
+  row: any;
   network: any;
 }>();
 
@@ -43,8 +37,6 @@ const formValue = ref({
   oif: '',
   masquerade: true,
   snat: '',
-  add: 1,
-  position: 0,
   comment: ''
 });
 
@@ -107,8 +99,6 @@ function initData() {
     oif: '',
     masquerade: true,
     snat: '',
-    add: 1,
-    position: 0,
     comment: ''
   };
   emit('close');
@@ -118,53 +108,13 @@ async function onSubmit() {
   await validate();
   //  提交数据
   loading.value = true;
-  const expr: any = [];
 
-  expr.push({
-    type: 'match',
-    protocol: 'oif',
-    field: '',
-    Value: formValue.value.oif
-  });
-
-  if (!formValue.value.sipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'saddr',
-      Value: formValue.value.sip
-    });
-  }
-
-  if (!formValue.value.dipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'daddr',
-      Value: formValue.value.dip
-    });
-  }
-
-  if (!formValue.value.masquerade) {
-    expr.push({
-      type: 'match',
-      protocol: 'snat',
-      field: 'ip to',
-      Value: formValue.value.snat
-    });
-  } else {
-    expr.push({
-      type: 'match',
-      protocol: 'masquerade',
-      field: '',
-      Value: ''
-    });
-  }
-
-  const { error } = await updateFirewallPolicy({
+  const { error } = await updateSnatPolicy({
     id: props.row.id,
-    comment: formValue.value.comment,
-    expr
+    ...formValue.value,
+    snat: formValue.value.masquerade ? '' : formValue.value.snat,
+    dip: formValue.value.dipAny ? '' : formValue.value.dip,
+    sip: formValue.value.sipAny ? '' : formValue.value.sip
   });
   loading.value = false;
   if (error) return;
@@ -173,35 +123,17 @@ async function onSubmit() {
 }
 
 async function enterModal() {
-  props.row.expr.forEach((item: any) => {
-    if (item.protocol === 'ip' && item.field === 'saddr') {
-      formValue.value.sipAny = false;
-      formValue.value.sip = item.value;
-      return;
-    }
+  formValue.value = props.row;
+  if (!props.row.sip || props.row.sip === '') {
+    formValue.value.sipAny = true;
+  }
+  if (!props.row.dip || props.row.dip === '') {
+    formValue.value.dipAny = true;
+  }
 
-    if (item.protocol === 'ip' && item.field === 'daddr') {
-      formValue.value.dipAny = false;
-      formValue.value.dip = item.value;
-      return;
-    }
-
-    if (item.protocol === 'oif') {
-      formValue.value.oif = item.value;
-      return;
-    }
-
-    if (item.protocol === 'masquerade') {
-      formValue.value.masquerade = true;
-    }
-
-    if (item.protocol === 'snat') {
-      formValue.value.snat = item.value;
-      formValue.value.masquerade = false;
-    }
-
-    // if (item.protocol === 'snat')
-  });
+  if (!props.row.snat || props.row.snat === '') {
+    formValue.value.masquerade = true;
+  }
 
   loading.value = false;
 }
@@ -295,34 +227,6 @@ async function enterModal() {
 
         <NFormItem v-if="!formValue.masquerade" label=" " path="snat">
           <NInput v-model:value="formValue.snat" />
-        </NFormItem>
-
-        <NFormItem :label="$t('page.firewallPolicy.position')" path="position">
-          <NSpace :size="14" class="w-full">
-            <NInputNumber v-if="formValue.add > 2" v-model:value="formValue.position" />
-            <NSelect
-              v-model:value="formValue.add"
-              class="w-215px"
-              :options="[
-                {
-                  label: $t('page.firewallPolicy.start'),
-                  value: 1
-                },
-                {
-                  label: $t('page.firewallPolicy.end'),
-                  value: 2
-                },
-                {
-                  label: $t('page.firewallPolicy.beforePosition'),
-                  value: 3
-                },
-                {
-                  label: $t('page.firewallPolicy.afterPosition'),
-                  value: 4
-                }
-              ]"
-            />
-          </NSpace>
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.comment')" path="comment">

@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { addFirewallPolicy } from '@/service/api';
+import { addDnatPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpAddr, checkIpMask } from '@/utils/ip_check';
 
 const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
-
-const chain = 3;
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -34,11 +32,11 @@ const formValue = ref({
   protocol: null,
   dipAny: true,
   dip: '',
-  tip: '',
-  ports: [
+  dnat: '',
+  port: [
     {
-      key: '',
-      value: ''
+      key: null,
+      value: null
     }
   ],
   iif: '',
@@ -80,7 +78,7 @@ const rules = computed<any>(() => {
       }
     ],
 
-    tip: [
+    dnat: [
       {
         required: true,
         trigger: ['input', 'change'],
@@ -104,11 +102,11 @@ function initData() {
     dipAny: true,
     dip: '',
 
-    tip: '',
-    ports: [
+    dnat: '',
+    port: [
       {
-        key: '',
-        value: ''
+        key: null,
+        value: null
       }
     ],
 
@@ -125,40 +123,11 @@ async function onSubmit() {
   await validate();
   //  提交数据
   loading.value = true;
-  const expr: any = [];
 
-  expr.push({
-    type: 'match',
-    protocol: 'iif',
-    field: '',
-    Value: formValue.value.iif
-  });
-
-  if (!formValue.value.dipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'daddr',
-      Value: formValue.value.dip
-    });
-  }
-
-  const tps = formValue.value.ports.map((item: any) => {
-    return `${item.key} : ${formValue.value.tip} . ${item.value}`;
-  });
-  expr.push({
-    type: 'match',
-    protocol: 'dnat',
-    field: `ip to ${formValue.value.protocol} dport map`,
-    Value: tps.join(', ')
-  });
-
-  const { error } = await addFirewallPolicy({
-    chain,
-    comment: formValue.value.comment,
+  const { error } = await addDnatPolicy({
+    ...formValue.value,
     add: !(formValue.value.add === 1 || formValue.value.add === 3),
-    position: formValue.value.add > 2 ? formValue.value.position : 0,
-    expr
+    position: formValue.value.add > 2 ? formValue.value.position : 0
   });
   loading.value = false;
   if (error) return;
@@ -239,15 +208,15 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.nat')" path="tip">
-          <NInput v-model:value="formValue.tip" />
+        <NFormItem :label="$t('page.firewallPolicy.nat')" path="dnat">
+          <NInput v-model:value="formValue.dnat" />
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.natPort')" path="ports">
+        <NFormItem :label="$t('page.firewallPolicy.natPort')" path="port">
           <NDynamicInput
-            v-model:value="formValue.ports"
+            v-model:value="formValue.port"
             item-style="margin-bottom: 0;"
-            :on-create="() => ({ key: '', value: '' })"
+            :on-create="() => ({ key: null, value: null })"
           >
             <template #action="{ index, create, remove }">
               <NSpace class="ml-20px w-100px">
@@ -270,7 +239,7 @@ async function enterModal() {
                 <NFormItem
                   ignore-path-change
                   :show-label="false"
-                  :path="`ports[${index}].key`"
+                  :path="`port[${index}].key`"
                   :rule="{
                     trigger: ['input', 'change'],
                     validator(_rule: any, value: string) {
@@ -286,8 +255,9 @@ async function enterModal() {
                     }
                   }"
                 >
-                  <NInput
-                    v-model:value="formValue.ports[index].key"
+                  <NInputNumber
+                    v-model:value="formValue.port[index].key"
+                    :show-button="false"
                     :placeholder="$t('page.firewallPolicy.destPort')"
                     @keydown.enter.prevent
                   />
@@ -298,7 +268,7 @@ async function enterModal() {
                 <NFormItem
                   ignore-path-change
                   :show-label="false"
-                  :path="`ports[${index}].value`"
+                  :path="`port[${index}].value`"
                   :rule="{
                     trigger: ['input', 'change'],
                     validator(_rule: any, value: string) {
@@ -314,9 +284,10 @@ async function enterModal() {
                     }
                   }"
                 >
-                  <NInput
-                    v-model:value="formValue.ports[index].value"
+                  <NInputNumber
+                    v-model:value="formValue.port[index].value"
                     :placeholder="$t('page.firewallPolicy.natPort')"
+                    :show-button="false"
                     @keydown.enter.prevent
                   />
                 </NFormItem>

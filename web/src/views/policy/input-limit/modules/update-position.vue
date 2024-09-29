@@ -95,7 +95,7 @@ async function onSubmit() {
   });
   loading.value = false;
   if (error) return;
-  window.$message?.success($t('common.addSuccess'));
+  window.$message?.success($t('common.updateSuccess'));
   showModal.value = false;
 }
 

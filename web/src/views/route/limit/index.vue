@@ -4,18 +4,16 @@ import type { Ref } from 'vue';
 import { computed, h, ref } from 'vue';
 import { NSpace, NTag } from 'naive-ui';
 import dayjs from 'dayjs';
-import { deleteFirewallPolicy, getFirewallPolicyList } from '@/service/api';
+import { deleteForwardLimitPolicy, getForwardLimitPolicyList } from '@/service/api';
 import { $t } from '@/locales';
 import CustomTableHeader from '@/components/table/custom-table-header.vue';
 import { ADD_FIREWALL_POLICY } from '@/utils/permissions_consts';
 import { checkIpAddr, checkIpInNet, checkPort } from '@/utils/ip_check';
-import UpdatePosition from '@/components/policy/update-position.vue';
 import { createAction } from '@/components/policy/utils';
+import UpdatePosition from './modules/update-position.vue';
 import DataSearch from './modules/table-search.vue';
 import AddData from './modules/add-data.vue';
 import UpdateData from './modules/update-data.vue';
-
-const chain = 8;
 
 interface SearchParams {
   sourceIp: string;
@@ -60,7 +58,7 @@ function updateModalClick(row: any, method: string) {
       positiveText: $t('common.confirm'),
       negativeText: $t('common.cancel'),
       onPositiveClick: async () => {
-        const { error } = await deleteFirewallPolicy(row.id);
+        const { error } = await deleteForwardLimitPolicy(row.id);
         if (error) return;
         getData();
         window.$message?.success($t('common.deleteSuccess'));
@@ -95,16 +93,14 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 100,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'tcp' || item.protocol === 'udp') {
-          return h(
-            'span',
-            {},
-            {
-              default: () => item.protocol
-            }
-          );
-        }
+      if (row.protocol === 'tcp' || row.protocol === 'udp') {
+        return h(
+          'span',
+          {},
+          {
+            default: () => row.protocol
+          }
+        );
       }
 
       return h(
@@ -123,35 +119,33 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 200,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'ip' && item.field === 'saddr') {
-          return h(
-            NSpace,
-            { justify: 'center' },
-            {
-              default: () =>
-                item.value.split(',').map((x: string) => {
-                  return h(
-                    NTag,
-                    {
-                      bordered: false,
-                      type: 'success'
-                    },
-                    {
-                      default: () => x
-                    }
-                  );
-                })
-            }
-          );
-        }
+      if (row.sip && row.sip !== '') {
+        return h(
+          NSpace,
+          { justify: 'center' },
+          {
+            default: () =>
+              row.sip.split(',').map((x: string) => {
+                return h(
+                  NTag,
+                  {
+                    bordered: false,
+                    type: 'error'
+                  },
+                  {
+                    default: () => x
+                  }
+                );
+              })
+          }
+        );
       }
 
       return h(
         NTag,
         {
           bordered: false,
-          type: 'success'
+          type: 'error'
         },
         {
           default: () => $t('page.firewallPolicy.allIp')
@@ -166,35 +160,33 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 200,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'ip' && item.field === 'daddr') {
-          return h(
-            NSpace,
-            { justify: 'center' },
-            {
-              default: () =>
-                item.value.split(',').map((x: string) => {
-                  return h(
-                    NTag,
-                    {
-                      bordered: false,
-                      type: 'success'
-                    },
-                    {
-                      default: () => x
-                    }
-                  );
-                })
-            }
-          );
-        }
+      if (row.dip && row.dip !== '') {
+        return h(
+          NSpace,
+          { justify: 'center' },
+          {
+            default: () =>
+              row.dip.split(',').map((x: string) => {
+                return h(
+                  NTag,
+                  {
+                    bordered: false,
+                    type: 'error'
+                  },
+                  {
+                    default: () => x
+                  }
+                );
+              })
+          }
+        );
       }
 
       return h(
         NTag,
         {
           bordered: false,
-          type: 'success'
+          type: 'error'
         },
         {
           default: () => $t('page.firewallPolicy.allIp')
@@ -209,19 +201,17 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 100,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'tcp' || item.protocol === 'udp') {
-          return h(
-            'span',
-            {},
-            {
-              default: () =>
-                item.field.trim() === 'dport'
-                  ? $t('page.firewallPolicy.destPort')
-                  : $t('page.firewallPolicy.sourcePort')
-            }
-          );
-        }
+      if (row.protocol === 'tcp' || row.protocol === 'udp') {
+        return h(
+          'span',
+          {},
+          {
+            default: () =>
+              row.portType.trim() === 'dport'
+                ? $t('page.firewallPolicy.destPort')
+                : $t('page.firewallPolicy.sourcePort')
+          }
+        );
       }
 
       return h(
@@ -240,35 +230,33 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 100,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'tcp' || item.protocol === 'udp') {
-          return h(
-            NSpace,
-            { justify: 'center' },
-            {
-              default: () =>
-                item.value.split(',').map((x: string) => {
-                  return h(
-                    NTag,
-                    {
-                      bordered: false,
-                      type: 'success'
-                    },
-                    {
-                      default: () => x
-                    }
-                  );
-                })
-            }
-          );
-        }
+      if (row.protocol === 'tcp' || row.protocol === 'udp') {
+        return h(
+          NSpace,
+          { justify: 'center' },
+          {
+            default: () =>
+              row.port.split(',').map((x: string) => {
+                return h(
+                  NTag,
+                  {
+                    bordered: false,
+                    type: 'error'
+                  },
+                  {
+                    default: () => x
+                  }
+                );
+              })
+          }
+        );
       }
 
       return h(
         NTag,
         {
           bordered: false,
-          type: 'success'
+          type: 'error'
         },
         {
           default: () => $t('page.firewallPolicy.all')
@@ -279,31 +267,18 @@ const columns = computed<any>(() => [
 
   {
     show: true,
-    key: 'expr[2].value',
     title: $t('page.firewallPolicy.speed'),
     align: 'center',
     minWidth: 100,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'limit') {
-          return h(
-            'span',
-            {},
-            {
-              default: () => item.value
-            }
-          );
-        }
-      }
-
       return h(
         NTag,
         {
           bordered: false,
-          type: 'success'
+          type: 'error'
         },
         {
-          default: () => $t('page.firewallPolicy.all')
+          default: () => `${row.limit} ${row.speed}`
         }
       );
     }
@@ -359,7 +334,7 @@ const tableRef = ref<any>(null);
 
 async function getData() {
   loading.value = true;
-  const { data: res, error } = await getFirewallPolicyList(chain);
+  const { data: res, error } = await getForwardLimitPolicyList();
   loading.value = false;
   if (error) return;
   network.value = res.network;
@@ -391,75 +366,60 @@ function filterDataFn() {
   //  只显示符合条件的数据
   // eslint-disable-next-line complexity
   filterData.value = data.filter((item: any) => {
-    for (const element of item.expr) {
-      if (
-        element.protocol === 'ip' &&
-        element.field === 'daddr' &&
-        listParams.value.destIp &&
-        listParams.value.destIp.trim() !== ''
-      ) {
-        // 判断ip 是否有效，有效才进行过滤
-        if (checkIpAddr(listParams.value.destIp)) {
-          // 判断是否在范围&& checkIpInNet()
-          const tmpIps = element.value.split(',');
+    if (item.dip && item.dip !== '' && listParams.value.destIp && listParams.value.destIp.trim() !== '') {
+      // 判断ip 是否有效，有效才进行过滤
+      if (checkIpAddr(listParams.value.destIp)) {
+        // 判断是否在范围&& checkIpInNet()
+        const tmpIps = item.dip.split(',');
 
-          let tmpIpState = false;
-          for (let i = 0; i < tmpIps.length; i += 1) {
-            // eslint-disable-next-line max-depth
-            if (tmpIps[i] && checkIpInNet(listParams.value.destIp, tmpIps[i])) {
-              tmpIpState = true;
-              break;
-            }
-          }
-          if (!tmpIpState) return false;
-        }
-        continue;
-      }
-
-      if (
-        element.protocol === 'ip' &&
-        element.field === 'saddr' &&
-        listParams.value.sourceIp &&
-        listParams.value.sourceIp.trim() !== ''
-      ) {
-        // 判断ip 是否有效，有效才进行过滤
-        if (checkIpAddr(listParams.value.sourceIp)) {
-          // 判断是否在范围&& checkIpInNet()
-          const tmpIps = element.value.split(',');
-
-          let tmpIpState = false;
-          for (let i = 0; i < tmpIps.length; i += 1) {
-            // eslint-disable-next-line max-depth
-            if (tmpIps[i] && checkIpInNet(listParams.value.sourceIp, tmpIps[i])) {
-              tmpIpState = true;
-              break;
-            }
-          }
-          if (!tmpIpState) return false;
-        }
-        continue;
-      }
-
-      if (
-        (element.protocol === 'tcp' || element.protocol === 'udp') &&
-        listParams.value.dport &&
-        listParams.value.dport.trim() !== ''
-      ) {
-        // 判断ip 是否有效，有效才进行过滤
-        const ports = element.value.split(',');
-        let tmpState = false;
-        for (let i = 0; i < ports.length; i += 1) {
+        let tmpIpState = false;
+        for (let i = 0; i < tmpIps.length; i += 1) {
           // eslint-disable-next-line max-depth
-          if (checkPort(listParams.value.dport, ports[i])) {
-            tmpState = true;
+          if (tmpIps[i] && checkIpInNet(listParams.value.destIp, tmpIps[i])) {
+            tmpIpState = true;
             break;
           }
         }
-
-        // eslint-disable-next-line max-depth
-        if (!tmpState) return false;
-        continue;
+        if (!tmpIpState) return false;
       }
+    }
+
+    if (item.sip && item.sip !== '' && listParams.value.sourceIp && listParams.value.sourceIp.trim() !== '') {
+      // 判断ip 是否有效，有效才进行过滤
+      if (checkIpAddr(listParams.value.sourceIp)) {
+        // 判断是否在范围&& checkIpInNet()
+        const tmpIps = item.sip.split(',');
+
+        let tmpIpState = false;
+        for (let i = 0; i < tmpIps.length; i += 1) {
+          // eslint-disable-next-line max-depth
+          if (tmpIps[i] && checkIpInNet(listParams.value.sourceIp, tmpIps[i])) {
+            tmpIpState = true;
+            break;
+          }
+        }
+        if (!tmpIpState) return false;
+      }
+    }
+
+    if (
+      (item.protocol === 'tcp' || item.protocol === 'udp') &&
+      listParams.value.dport &&
+      listParams.value.dport.trim() !== ''
+    ) {
+      // 判断ip 是否有效，有效才进行过滤
+      const ports = item.port.split(',');
+      let tmpState = false;
+      for (let i = 0; i < ports.length; i += 1) {
+        // eslint-disable-next-line max-depth
+        if (checkPort(listParams.value.dport, ports[i])) {
+          tmpState = true;
+          break;
+        }
+      }
+
+      // eslint-disable-next-line max-depth
+      if (!tmpState) return false;
     }
 
     return true;

@@ -6,6 +6,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"os/exec"
 	"server/internal/dao"
+	"server/internal/model"
 	"server/internal/model/entity"
 	"strings"
 )
@@ -115,13 +116,15 @@ add chain inet web-firewall %s {type nat hook postrouting priority %d; policy ac
 // Flush 从数据库中读取数据，生成nft备份文件，并将备份文件重新导入
 func (n *Nftables) Flush(ctx context.Context) error {
 
+	var ruleList []string
+
 	// 入站策略
 	var inputList []entity.InputRules
 	err := dao.InputRules.Ctx(ctx).OrderAsc(dao.InputRules.Columns().Position).Scan(&inputList)
 	if err != nil {
 		return err
 	}
-	var inputStr []string
+
 	for _, input := range inputList {
 		line := ""
 		if strings.TrimSpace(input.Ip) != "" {
@@ -158,7 +161,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		line += fmt.Sprintf(" %s", input.Policy)
 
-		inputStr = append(inputStr, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[INPUT], line))
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[INPUT], line))
 	}
 
 	// todo 入站流控
@@ -170,7 +173,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 	}
 
 	g.Log().Debug(ctx, "output:== ", inputLimitList)
-	var inputLimitStr []string
+
 	for _, limit := range inputLimitList {
 		line := ""
 		if strings.TrimSpace(limit.Ip) != "" {
@@ -192,7 +195,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		g.Log().Debug(ctx, line)
 
-		inputLimitStr = append(inputLimitStr, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[LIMIT_INPUT], line))
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[LIMIT_INPUT], line))
 	}
 
 	// todo 出站策略
@@ -203,7 +206,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 	}
 
 	//g.Log().Debug(ctx, "output:== ", outputList)
-	var outputStr []string
+
 	for _, output := range outputList {
 		line := ""
 		if strings.TrimSpace(output.Ip) != "" {
@@ -241,7 +244,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 		line += fmt.Sprintf(" %s", output.Policy)
 		g.Log().Debug(ctx, line)
 
-		outputStr = append(outputStr, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[OUTPUT], line))
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[OUTPUT], line))
 	}
 	// todo 出站流控
 
@@ -251,7 +254,6 @@ func (n *Nftables) Flush(ctx context.Context) error {
 		return err
 	}
 
-	var outputLimitStr []string
 	for _, limit := range outputLimitList {
 		line := ""
 		if strings.TrimSpace(limit.Ip) != "" {
@@ -273,23 +275,167 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		g.Log().Debug(ctx, line)
 
-		outputLimitStr = append(outputLimitStr, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[LIMIT_OUTPUT], line))
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[LIMIT_OUTPUT], line))
 	}
 
 	// todo 源地址转换
 
-	// todo 目的地址转换
+	var snatList []entity.SnatRules
+	err = dao.SnatRules.Ctx(ctx).OrderAsc(dao.SnatRules.Columns().Position).Scan(&snatList)
+	if err != nil {
+		return err
+	}
 
+	for _, item := range snatList {
+		line := ""
+		if strings.TrimSpace(item.Oif) != "" {
+			line += fmt.Sprintf("oifname %s ", item.Oif)
+		}
+
+		if strings.TrimSpace(item.Sip) != "" {
+			if strings.Contains(item.Sip, ",") {
+				line += fmt.Sprintf("ip saddr { %s } ", item.Sip)
+			} else {
+				line += fmt.Sprintf("ip saddr %s ", item.Sip)
+			}
+		}
+
+		if strings.TrimSpace(item.Dip) != "" {
+			if strings.Contains(item.Dip, ",") {
+				line += fmt.Sprintf("ip daddr { %s } ", item.Dip)
+			} else {
+				line += fmt.Sprintf("ip daddr %s ", item.Dip)
+			}
+		}
+
+		if strings.TrimSpace(item.Snat) != "" {
+			line += fmt.Sprintf(" snat ip to %s ", item.Snat)
+		} else {
+			line += fmt.Sprintf(" masquerade")
+		}
+
+		g.Log().Debug(ctx, line)
+
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[SNAT], line))
+	}
+
+	// todo 目的地址转换
+	var dnatList []model.DnatRulesets
+	err = dao.DnatRules.Ctx(ctx).OrderAsc(dao.DnatRules.Columns().Position).Scan(&dnatList)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range dnatList {
+		line := ""
+		if strings.TrimSpace(item.Iif) != "" {
+			line += fmt.Sprintf("iifname %s ", item.Iif)
+		}
+
+		if strings.TrimSpace(item.Dip) != "" {
+			if strings.Contains(item.Dip, ",") {
+				line += fmt.Sprintf("ip daddr { %s } ", item.Dip)
+			} else {
+				line += fmt.Sprintf("ip daddr %s ", item.Dip)
+			}
+		}
+
+		if item.Protocol == "tcp" || item.Protocol == "udp" {
+			var ports []string
+			for _, port := range item.Port {
+				ports = append(ports, fmt.Sprintf("%d : %s . %d", port.Key, item.Dnat, port.Value))
+			}
+			line += fmt.Sprintf(" dnat ip to %s dport map { %s }", item.Protocol, strings.Join(ports, ", "))
+		}
+
+		g.Log().Debug(ctx, line)
+
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[DNAT], line))
+	}
 	// todo 转发策略
 
-	// todo 转发流量
+	var forwardList []entity.ForwardRules
+	err = dao.ForwardRules.Ctx(ctx).OrderAsc(dao.ForwardRules.Columns().Position).Scan(&forwardList)
+	if err != nil {
+		return err
+	}
 
-	allRule := append(inputStr, outputStr...)
-	allRule = append(allRule, inputLimitStr...)
-	allRule = append(allRule, outputLimitStr...)
+	for _, item := range forwardList {
+		line := ""
+		if strings.TrimSpace(item.Sip) != "" {
+			if strings.Contains(item.Sip, ",") {
+				line += fmt.Sprintf("ip saddr { %s } ", item.Sip)
+			} else {
+				line += fmt.Sprintf("ip saddr %s ", item.Sip)
+			}
+		}
 
-	g.Log().Debug(ctx, basicStr, strings.Join(allRule, "\n"))
-	err = exec.Command("sh", "-c", fmt.Sprintf("nft -f - <<EOF\n%s\n%s\nEOF", basicStr, strings.Join(allRule, "\n"))).Run()
+		if strings.TrimSpace(item.Dip) != "" {
+			if strings.Contains(item.Dip, ",") {
+				line += fmt.Sprintf("ip daddr { %s } ", item.Dip)
+			} else {
+				line += fmt.Sprintf("ip daddr %s ", item.Dip)
+			}
+		}
+
+		if item.Protocol == "tcp" || item.Protocol == "udp" {
+			if strings.Contains(item.Port, ",") {
+				line += fmt.Sprintf("%s dport { %s } ", item.Protocol, item.Port)
+			} else {
+				line += fmt.Sprintf("%s dport %s ", item.Protocol, item.Port)
+			}
+		}
+		line += fmt.Sprintf(" %s", item.Policy)
+
+		g.Log().Debug(ctx, line)
+
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[FORWARD], line))
+	}
+
+	// todo 转发流控
+
+	var forwardLimitList []entity.ForwardLimitRules
+	err = dao.ForwardLimitRules.Ctx(ctx).OrderAsc(dao.ForwardLimitRules.Columns().Position).Scan(&forwardLimitList)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range forwardLimitList {
+		line := ""
+
+		if strings.TrimSpace(item.Sip) != "" {
+			if strings.Contains(item.Sip, ",") {
+				line += fmt.Sprintf("ip saddr { %s } ", item.Sip)
+			} else {
+				line += fmt.Sprintf("ip saddr %s ", item.Sip)
+			}
+		}
+
+		if strings.TrimSpace(item.Dip) != "" {
+			if strings.Contains(item.Dip, ",") {
+				line += fmt.Sprintf("ip daddr { %s } ", item.Dip)
+			} else {
+				line += fmt.Sprintf("ip daddr %s ", item.Dip)
+			}
+		}
+
+		if item.Protocol == "tcp" || item.Protocol == "udp" {
+			if strings.Contains(item.Port, ",") {
+				line += fmt.Sprintf("%s %s { %s } ", item.Protocol, item.PortType, item.Port)
+			} else {
+				line += fmt.Sprintf("%s %s %s ", item.Protocol, item.PortType, item.Port)
+			}
+		}
+
+		g.Log().Debug(ctx, line)
+
+		line += fmt.Sprintf(" limit rate over %d %s drop", item.Limit, speedMap[item.Speed])
+
+		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[LIMIT_FORWARD], line))
+	}
+
+	g.Log().Debug(ctx, basicStr, strings.Join(ruleList, "\n"))
+	err = exec.Command("sh", "-c", fmt.Sprintf("nft -f - <<EOF\n%s\n%s\nEOF", basicStr, strings.Join(ruleList, "\n"))).Run()
 	if err != nil {
 		g.Log().Error(ctx, err)
 		return err

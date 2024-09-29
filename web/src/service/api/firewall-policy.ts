@@ -117,3 +117,95 @@ export function changeOutputLimitPolicyPosition(data: any) {
 export function deleteOutputLimitPolicy(id: number) {
   return requestV1({ url: `/policy/output-limit/${id}`, method: 'DELETE' });
 }
+
+// 源地址转换
+export function getSnatPolicyList() {
+  return requestV1<Api.Common.ListRes>({
+    url: `/route/snat`,
+    method: 'GET'
+  });
+}
+
+export function addSnatPolicy(data: any) {
+  return requestV1({ url: `/route/snat`, data, method: 'POST' });
+}
+
+export function updateSnatPolicy(data: any) {
+  return requestV1({ url: `/route/snat/${data.id}`, data, method: 'PUT' });
+}
+
+export function changeSnatPolicyPosition(data: any) {
+  return requestV1({ url: `/route/snat/position/${data.id}`, data, method: 'PUT' });
+}
+export function deleteSnatPolicy(id: number) {
+  return requestV1({ url: `/route/snat/${id}`, method: 'DELETE' });
+}
+
+// 目的地址转换
+export function getDnatPolicyList() {
+  return requestV1<Api.Common.ListRes>({
+    url: `/route/dnat`,
+    method: 'GET'
+  });
+}
+
+export function addDnatPolicy(data: any) {
+  return requestV1({ url: `/route/dnat`, data, method: 'POST' });
+}
+
+export function updateDnatPolicy(data: any) {
+  return requestV1({ url: `/route/dnat/${data.id}`, data, method: 'PUT' });
+}
+
+export function changeDnatPolicyPosition(data: any) {
+  return requestV1({ url: `/route/dnat/position/${data.id}`, data, method: 'PUT' });
+}
+export function deleteDnatPolicy(id: number) {
+  return requestV1({ url: `/route/dnat/${id}`, method: 'DELETE' });
+}
+
+// 转发策略
+export function getForwardPolicyList() {
+  return requestV1<Api.Common.ListRes>({
+    url: `/route/forward`,
+    method: 'GET'
+  });
+}
+
+export function addForwardPolicy(data: any) {
+  return requestV1({ url: `/route/forward`, data, method: 'POST' });
+}
+
+export function updateForwardPolicy(data: any) {
+  return requestV1({ url: `/route/forward/${data.id}`, data, method: 'PUT' });
+}
+
+export function changeForwardPolicyPosition(data: any) {
+  return requestV1({ url: `/route/forward/position/${data.id}`, data, method: 'PUT' });
+}
+export function deleteForwardPolicy(id: number) {
+  return requestV1({ url: `/route/forward/${id}`, method: 'DELETE' });
+}
+
+// 转发流控
+export function getForwardLimitPolicyList() {
+  return requestV1<Api.Common.ListRes>({
+    url: `/route/limit`,
+    method: 'GET'
+  });
+}
+
+export function addForwardLimitPolicy(data: any) {
+  return requestV1({ url: `/route/limit`, data, method: 'POST' });
+}
+
+export function updateForwardLimitPolicy(data: any) {
+  return requestV1({ url: `/route/limit/${data.id}`, data, method: 'PUT' });
+}
+
+export function changeForwardLimitPolicyPosition(data: any) {
+  return requestV1({ url: `/route/limit/position/${data.id}`, data, method: 'PUT' });
+}
+export function deleteForwardLimitPolicy(id: number) {
+  return requestV1({ url: `/route/limit/${id}`, method: 'DELETE' });
+}

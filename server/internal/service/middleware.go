@@ -11,13 +11,14 @@ import (
 
 type (
 	IMiddleware interface {
+		// Auth  校验登录状态是否可用
+		Auth(r *ghttp.Request)
+		ConfigLog(r *ghttp.Request)
 		// Ctx 将自定义业务上下文变量注入到当前请求的上下文中
 		Ctx(r *ghttp.Request)
 		// CORS allows Cross-origin resource sharing. 提供前端跨域（不开启，前端自行代理解决）
 		CORS(r *ghttp.Request)
-		// Auth validates the request to allow only signed-in users visit. 校验登录状态是否可用
-		Auth(r *ghttp.Request)
-		ConfigLog(r *ghttp.Request)
+		IsForward(r *ghttp.Request)
 	}
 )
 

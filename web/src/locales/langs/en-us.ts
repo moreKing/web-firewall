@@ -594,7 +594,8 @@ const local: App.I18n.Schema = {
       portType: 'Port Type'
     },
     kernel: {
-      forward: 'Forward'
+      forward: 'Forward',
+      notForward: 'Data forwarding is not enabled. Do you want to enable it?'
     }
   },
   form: {

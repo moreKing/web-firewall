@@ -185,6 +185,23 @@ export const requestV1 = createFlatRequest<App.Service.Response, RequestInstance
       return response.data.code === 0;
     },
     async onBackendFail(response) {
+      if (response.data.code === 581) {
+        // 未启用数据转发
+        // window.$message?.error('aaaa');
+        window.$dialog?.error({
+          title: $t('common.error'),
+          content: $t('page.kernel.notForward'),
+          positiveText: $t('common.confirm'),
+          negativeText: $t('common.cancel'),
+          maskClosable: false,
+          onPositiveClick() {
+            useRouterPush(false).routerPushByKey('system_kernel');
+          },
+          onClose() {}
+        });
+        return null;
+      }
+
       if (response.data.code > 10) {
         window.$message?.error(response.data.message);
         return null;

@@ -12,6 +12,7 @@ import (
 type (
 	INetwork interface {
 		GetNetwork() (*[]model.Network, error)
+		IsNetwork(interfaceName string) (ok bool, err error)
 	}
 )
 

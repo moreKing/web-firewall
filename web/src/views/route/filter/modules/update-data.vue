@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { updateFirewallPolicy } from '@/service/api';
+import { updateForwardPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
@@ -9,14 +9,8 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-interface Rule {
-  id: number;
-  comment: string;
-  expr: any[];
-}
-
 const props = defineProps<{
-  row: Rule;
+  row: any;
 }>();
 
 const emit = defineEmits<{
@@ -26,18 +20,13 @@ const emit = defineEmits<{
 const loading = ref(false);
 
 const formValue = ref({
-  protocol: 'any',
-
+  protocol: '',
   dipAny: true,
-
   dip: '',
-  dport: '',
-
+  port: '',
   sipAny: true,
   sip: '',
   policy: 'accept',
-  add: 1,
-  position: 0,
   comment: ''
 });
 
@@ -46,8 +35,6 @@ const rules = computed<any>(() => {
   const { defaultRequiredRule } = useFormRules();
 
   return {
-    protocol: [defaultRequiredRule],
-
     sip: [
       defaultRequiredRule,
       {
@@ -79,7 +66,7 @@ const rules = computed<any>(() => {
         }
       }
     ],
-    dport: [
+    port: [
       defaultRequiredRule,
       {
         trigger: ['input', 'change'],
@@ -110,15 +97,13 @@ const rules = computed<any>(() => {
 
 function initData() {
   formValue.value = {
-    protocol: 'any',
+    protocol: '',
     dipAny: true,
     dip: '',
-    dport: '',
+    port: '',
     sipAny: true,
     sip: '',
     policy: 'accept',
-    add: 1,
-    position: 0,
     comment: ''
   };
   emit('close');
@@ -128,44 +113,13 @@ async function onSubmit() {
   await validate();
   //  提交数据
   loading.value = true;
-  const expr: any = [];
 
-  if (!formValue.value.sipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'saddr',
-      Value: formValue.value.sip
-    });
-  }
-
-  if (!formValue.value.dipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'daddr',
-      Value: formValue.value.dip
-    });
-  }
-
-  if (formValue.value.protocol !== 'any') {
-    expr.push({
-      type: 'match',
-      protocol: formValue.value.protocol,
-      field: 'dport',
-      Value: formValue.value.dport
-    });
-  }
-
-  expr.push({
-    type: 'policy',
-    policy: formValue.value.policy
-  });
-
-  const { error } = await updateFirewallPolicy({
+  const { error } = await updateForwardPolicy({
+    ...formValue.value,
     id: props.row.id,
-    comment: formValue.value.comment,
-    expr
+    sip: formValue.value.sipAny ? '' : formValue.value.sip,
+    dip: formValue.value.dipAny ? '' : formValue.value.dip,
+    port: formValue.value.protocol === '' ? '' : formValue.value.port
   });
   loading.value = false;
   if (error) return;
@@ -174,29 +128,9 @@ async function onSubmit() {
 }
 
 async function enterModal() {
-  props.row.expr.forEach((item: any) => {
-    if (item.protocol === 'ip' && item.field === 'daddr') {
-      formValue.value.dipAny = false;
-      formValue.value.dip = item.value;
-      return;
-    }
-
-    if (item.protocol === 'ip' && item.field === 'saddr') {
-      formValue.value.sipAny = false;
-      formValue.value.sip = item.value;
-    }
-
-    if (item.protocol === 'tcp' || item.protocol === 'udp') {
-      formValue.value.protocol = item.protocol;
-      formValue.value.dport = item.value;
-    }
-
-    if (item.type === 'policy') {
-      formValue.value.policy = item.policy;
-    }
-
-    // if (item.protocol === 'snat')
-  });
+  formValue.value = props.row;
+  formValue.value.dipAny = props.row.dip === '';
+  formValue.value.sipAny = props.row.sip === '';
 
   loading.value = false;
 }
@@ -233,7 +167,7 @@ async function enterModal() {
             :options="[
               {
                 label: $t('page.firewallPolicy.all'),
-                value: 'any'
+                value: ''
               },
               {
                 label: 'tcp',
@@ -291,9 +225,9 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem v-if="formValue.protocol !== 'any'" :label="$t('page.firewallPolicy.destPort')" path="dport">
+        <NFormItem v-if="formValue.protocol !== ''" :label="$t('page.firewallPolicy.destPort')" path="port">
           <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.dport" />
+            <NInput v-model:value="formValue.port" />
             <span class="mb-30px mt-10px font-size-14px text-truegray-400">
               {{ $t('page.firewallPolicy.portTip') }}
             </span>

@@ -816,6 +816,7 @@ declare namespace App {
         };
         kernel: {
           forward: string;
+          notForward: string;
         };
       };
       form: {

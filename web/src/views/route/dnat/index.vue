@@ -4,18 +4,17 @@ import type { Ref } from 'vue';
 import { computed, h, ref } from 'vue';
 import { NSpace, NTag } from 'naive-ui';
 import dayjs from 'dayjs';
-import { deleteFirewallPolicy, getFirewallPolicyList } from '@/service/api';
+import { deleteDnatPolicy, getDnatPolicyList } from '@/service/api';
 import { $t } from '@/locales';
 import CustomTableHeader from '@/components/table/custom-table-header.vue';
 import { ADD_FIREWALL_POLICY } from '@/utils/permissions_consts';
 import { checkIpAddr, checkIpInNet } from '@/utils/ip_check';
-import UpdatePosition from '@/components/policy/update-position.vue';
 import { createAction } from '@/components/policy/utils';
+import UpdatePosition from './modules/update-position.vue';
 import DataSearch from './modules/table-search.vue';
 import AddData from './modules/add-data.vue';
 import UpdateData from './modules/update-data.vue';
 
-const chain = 3;
 interface SearchParams {
   network: string;
   tip: string;
@@ -59,7 +58,7 @@ function updateModalClick(row: any, method: string) {
       positiveText: $t('common.confirm'),
       negativeText: $t('common.cancel'),
       onPositiveClick: async () => {
-        const { error } = await deleteFirewallPolicy(row.id);
+        const { error } = await deleteDnatPolicy(row.id);
         if (error) return;
         getData();
         window.$message?.success($t('common.deleteSuccess'));
@@ -93,30 +92,7 @@ const columns = computed<any>(() => [
     title: $t('page.firewallPolicy.sourceEthernet'),
     align: 'center',
     minWidth: 100,
-    render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'iif') {
-          return h(
-            'span',
-            {},
-            {
-              default: () => item.value
-            }
-          );
-        }
-      }
-
-      return h(
-        NTag,
-        {
-          bordered: false,
-          type: 'error'
-        },
-        {
-          default: () => $t('common.error')
-        }
-      );
-    }
+    key: 'iif'
   },
 
   {
@@ -124,42 +100,7 @@ const columns = computed<any>(() => [
     title: $t('page.firewallPolicy.protocol'),
     align: 'center',
     minWidth: 100,
-    render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'dnat') {
-          if (item.field.includes(' tcp ')) {
-            return h(
-              NSpace,
-              { justify: 'center' },
-              {
-                default: () => 'tcp'
-              }
-            );
-          }
-
-          if (item.field.includes(' udp ')) {
-            return h(
-              NSpace,
-              { justify: 'center' },
-              {
-                default: () => 'udp'
-              }
-            );
-          }
-        }
-      }
-
-      return h(
-        NTag,
-        {
-          bordered: false,
-          type: 'error'
-        },
-        {
-          default: () => $t('common.error')
-        }
-      );
-    }
+    key: 'protocol'
   },
 
   {
@@ -168,28 +109,26 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 200,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'ip' && item.field === 'daddr') {
-          return h(
-            NSpace,
-            { justify: 'center' },
-            {
-              default: () =>
-                item.value.split(',').map((x: string) => {
-                  return h(
-                    NTag,
-                    {
-                      bordered: false,
-                      type: 'success'
-                    },
-                    {
-                      default: () => x
-                    }
-                  );
-                })
-            }
-          );
-        }
+      if (row.dip && row.dip !== '') {
+        return h(
+          NSpace,
+          { justify: 'center' },
+          {
+            default: () =>
+              row.dip.split(',').map((x: string) => {
+                return h(
+                  NTag,
+                  {
+                    bordered: false,
+                    type: 'success'
+                  },
+                  {
+                    default: () => x
+                  }
+                );
+              })
+          }
+        );
       }
 
       return h(
@@ -210,30 +149,7 @@ const columns = computed<any>(() => [
     title: $t('page.firewallPolicy.nat'),
     align: 'center',
     minWidth: 200,
-    render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'dnat') {
-          return h(
-            'span',
-            {},
-            {
-              default: () => item.value.split(',')[0].split(':')[1].split(' . ')[0].trim()
-            }
-          );
-        }
-      }
-
-      return h(
-        NTag,
-        {
-          bordered: false,
-          type: 'error'
-        },
-        {
-          default: () => $t('common.error')
-        }
-      );
-    }
+    key: 'dnat'
   },
 
   {
@@ -242,39 +158,24 @@ const columns = computed<any>(() => [
     align: 'center',
     minWidth: 100,
     render(row: any) {
-      for (const item of row.expr) {
-        if (item.protocol === 'dnat') {
-          return h(
-            NSpace,
-            { justify: 'center' },
-            {
-              default: () =>
-                item.value.split(',').map((x: string) => {
-                  return h(
-                    NTag,
-
-                    {
-                      bordered: false,
-                      type: 'success'
-                    },
-                    {
-                      default: () => `${x.split(':')[0]} → ${x.split(':')[1].split(' . ')[1].trim()}`
-                    }
-                  );
-                })
-            }
-          );
-        }
-      }
-
       return h(
-        NTag,
+        NSpace,
+        { justify: 'center' },
         {
-          bordered: false,
-          type: 'error'
-        },
-        {
-          default: () => $t('common.error')
+          default: () =>
+            row.port.map((x: any) => {
+              return h(
+                NTag,
+
+                {
+                  bordered: false,
+                  type: 'success'
+                },
+                {
+                  default: () => `${x.key} → ${x.value}`
+                }
+              );
+            })
         }
       );
     }
@@ -329,7 +230,7 @@ const tableRef = ref<any>(null);
 
 async function getData() {
   loading.value = true;
-  const { data: res, error } = await getFirewallPolicyList(chain);
+  const { data: res, error } = await getDnatPolicyList();
   loading.value = false;
   if (error) return;
   network.value = res.network;
@@ -361,42 +262,32 @@ function filterDataFn() {
   //  只显示符合条件的数据
   // eslint-disable-next-line complexity
   filterData.value = data.filter((item: any) => {
-    for (const element of item.expr) {
-      if (element.protocol === 'dnat' && listParams.value.tip && listParams.value.tip.trim() !== '') {
-        // 判断ip 是否有效，有效才进行过滤
-        if (checkIpAddr(listParams.value.tip)) {
-          if (!element.value.includes(` ${listParams.value.tip.trim()} `)) return false;
-        }
-        continue;
+    if (listParams.value.tip && listParams.value.tip.trim() !== '') {
+      // 判断ip 是否有效，有效才进行过滤
+      if (checkIpAddr(listParams.value.tip)) {
+        if (item.dnat !== listParams.value.tip.trim()) return false;
       }
-      if (
-        element.protocol === 'ip' &&
-        element.field === 'daddr' &&
-        listParams.value.destIp &&
-        listParams.value.destIp.trim() !== ''
-      ) {
-        // 判断ip 是否有效，有效才进行过滤
-        if (checkIpAddr(listParams.value.destIp)) {
-          // 判断是否在范围&& checkIpInNet()
-          const tmpIps = element.value.split(',');
+    }
+    if (item.dip && item.dip !== '' && listParams.value.destIp && listParams.value.destIp.trim() !== '') {
+      // 判断ip 是否有效，有效才进行过滤
+      if (checkIpAddr(listParams.value.destIp)) {
+        // 判断是否在范围&& checkIpInNet()
+        const tmpIps = item.dip.split(',');
 
-          let tmpIpState = false;
-          for (let i = 0; i < tmpIps.length; i += 1) {
-            // eslint-disable-next-line max-depth
-            if (tmpIps[i] && checkIpInNet(listParams.value.destIp, tmpIps[i])) {
-              tmpIpState = true;
-              break;
-            }
+        let tmpIpState = false;
+        for (let i = 0; i < tmpIps.length; i += 1) {
+          // eslint-disable-next-line max-depth
+          if (tmpIps[i] && checkIpInNet(listParams.value.destIp, tmpIps[i])) {
+            tmpIpState = true;
+            break;
           }
-          if (!tmpIpState) return false;
         }
-        continue;
+        if (!tmpIpState) return false;
       }
+    }
 
-      if (element.protocol === 'iif' && listParams.value.network && listParams.value.network.trim() !== '') {
-        if (element.value !== listParams.value.network) return false;
-        continue;
-      }
+    if (listParams.value.network && listParams.value.network.trim() !== '') {
+      if (item.iif !== listParams.value.network) return false;
     }
 
     return true;

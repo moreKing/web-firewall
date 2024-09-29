@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { updateFirewallPolicy } from '@/service/api';
+import { updateForwardLimitPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpMask } from '@/utils/ip_check';
 
@@ -9,14 +9,8 @@ const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
 
-interface Rule {
-  id: number;
-  comment: string;
-  expr: any[];
-}
-
 const props = defineProps<{
-  row: Rule;
+  row: any;
 }>();
 
 const emit = defineEmits<{
@@ -25,38 +19,17 @@ const emit = defineEmits<{
 
 const loading = ref(false);
 
-interface FormValue {
-  protocol: string;
-  dipAny: boolean;
-  dip: string;
-  portType: boolean;
-  port: string;
-  sipAny: boolean;
-  sip: string;
-  limit: number | null;
-  limitSpeed: string;
-  add: number;
-  position: number;
-  comment: string;
-}
-
-const formValue = ref<FormValue>({
-  protocol: 'any',
-
+const formValue = ref<any>({
+  protocol: '',
   dipAny: true,
-
   dip: '',
-  portType: false,
+  portType: 'sport',
   port: '',
-
   sipAny: true,
   sip: '',
-
   limit: null,
-  limitSpeed: 'mbytes/second',
+  speed: 'mb/s',
 
-  add: 1,
-  position: 0,
   comment: ''
 });
 
@@ -65,8 +38,6 @@ const rules = computed<any>(() => {
   const { defaultRequiredRule } = useFormRules();
 
   return {
-    protocol: [defaultRequiredRule],
-
     sip: [
       defaultRequiredRule,
       {
@@ -130,21 +101,14 @@ const rules = computed<any>(() => {
 function initData() {
   formValue.value = {
     protocol: 'any',
-
     dipAny: true,
-
     dip: '',
-    portType: false,
+    portType: 'sport',
     port: '',
-
     sipAny: true,
     sip: '',
-
     limit: null,
-    limitSpeed: 'mbytes/second',
-
-    add: 1,
-    position: 0,
+    speed: 'mb/s',
     comment: ''
   };
   emit('close');
@@ -154,51 +118,16 @@ async function onSubmit() {
   await validate();
   //  提交数据
   loading.value = true;
-  const expr: any = [];
 
-  if (!formValue.value.sipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'saddr',
-      Value: formValue.value.sip
-    });
-  }
-
-  if (!formValue.value.dipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'daddr',
-      Value: formValue.value.dip
-    });
-  }
-
-  if (formValue.value.protocol !== 'any') {
-    expr.push({
-      type: 'match',
-      protocol: formValue.value.protocol,
-      field: formValue.value.portType ? 'sport' : 'dport',
-      Value: formValue.value.port
-    });
-  }
-
-  expr.push({
-    type: 'match',
-    protocol: 'limit',
-    field: 'rate over',
-    Value: `${formValue.value.limit} ${formValue.value.limitSpeed}`
-  });
-
-  expr.push({
-    type: 'policy',
-    policy: 'drop'
-  });
-
-  const { error } = await updateFirewallPolicy({
+  const { error } = await updateForwardLimitPolicy({
     id: props.row.id,
-    comment: formValue.value.comment,
-    expr
+    ...formValue.value,
+    add: !(formValue.value.add === 1 || formValue.value.add === 3),
+    position: formValue.value.add > 2 ? formValue.value.position : 0,
+    sip: formValue.value.sipAny ? '' : formValue.value.sip,
+    dip: formValue.value.dipAny ? '' : formValue.value.dip,
+    port: formValue.value.protocol === '' ? '' : formValue.value.port,
+    portType: formValue.value.protocol === '' ? '' : formValue.value.portType
   });
   loading.value = false;
   if (error) return;
@@ -207,33 +136,9 @@ async function onSubmit() {
 }
 
 async function enterModal() {
-  props.row.expr.forEach((item: any) => {
-    if (item.protocol === 'ip' && item.field === 'daddr') {
-      formValue.value.dipAny = false;
-      formValue.value.dip = item.value;
-      return;
-    }
-
-    if (item.protocol === 'ip' && item.field === 'saddr') {
-      formValue.value.sipAny = false;
-      formValue.value.sip = item.value;
-    }
-
-    if (item.protocol === 'tcp' || item.protocol === 'udp') {
-      formValue.value.portType = item.field === 'sport';
-      formValue.value.protocol = item.protocol;
-      formValue.value.port = item.value;
-    }
-
-    if (item.protocol === 'limit') {
-      const tmpLimit = item.value.trim().split(/\s+/);
-      formValue.value.limit = Number.parseInt(tmpLimit[0].trim(), 10);
-      formValue.value.limitSpeed = tmpLimit[1].trim();
-    }
-
-    // if (item.protocol === 'snat')
-  });
-
+  formValue.value = props.row;
+  formValue.value.sipAny = formValue.value.sip === '';
+  formValue.value.dipAny = formValue.value.dip === '';
   loading.value = false;
 }
 </script>
@@ -269,7 +174,7 @@ async function enterModal() {
             :options="[
               {
                 label: $t('page.firewallPolicy.all'),
-                value: 'any'
+                value: ''
               },
               {
                 label: 'tcp',
@@ -327,14 +232,14 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <div v-if="formValue.protocol !== 'any'">
+        <div v-if="formValue.protocol !== ''">
           <NFormItem :label="$t('page.firewallPolicy.port')" path="portType">
             <NRadioGroup v-model:value="formValue.portType" name="radiogroup">
               <NSpace>
-                <NRadio :value="true">
+                <NRadio value="sport">
                   {{ $t('page.firewallPolicy.sourcePort') }}
                 </NRadio>
-                <NRadio :value="false">
+                <NRadio value="dport">
                   {{ $t('page.firewallPolicy.destPort') }}
                 </NRadio>
               </NSpace>
@@ -357,24 +262,24 @@ async function enterModal() {
             <NInputNumber v-model:value="formValue.limit" />
 
             <NSelect
-              v-model:value="formValue.limitSpeed"
+              v-model:value="formValue.speed"
               class="w-215px"
               :options="[
                 {
                   label: 'kb/s',
-                  value: 'kbytes/second'
+                  value: 'kb/s'
                 },
                 {
                   label: 'mb/s',
-                  value: 'mbytes/second'
+                  value: 'mb/s'
                 },
                 {
                   label: 'kb/m',
-                  value: 'kbytes/minute'
+                  value: 'kb/m'
                 },
                 {
                   label: 'mb/m',
-                  value: 'mbytes/minute'
+                  value: 'mb/m'
                 }
               ]"
             />

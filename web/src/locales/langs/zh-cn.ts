@@ -594,7 +594,8 @@ const local: App.I18n.Schema = {
       portType: '端口类型'
     },
     kernel: {
-      forward: '数据转发'
+      forward: '数据转发',
+      notForward: '未启用数据转发，是否前往启用？'
     }
   },
   form: {

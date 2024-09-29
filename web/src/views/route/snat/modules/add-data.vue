@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { $t } from '@/locales';
-import { addFirewallPolicy } from '@/service/api';
+import { addSnatPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { checkIpAddr, checkIpMask } from '@/utils/ip_check';
 
 const { formRef, validate } = useNaiveForm();
 
 const showModal = defineModel<boolean>('show');
-
-const chain = 4;
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -118,55 +116,13 @@ async function onSubmit() {
   await validate();
   //  提交数据
   loading.value = true;
-  const expr: any = [];
-
-  expr.push({
-    type: 'match',
-    protocol: 'oif',
-    field: '',
-    Value: formValue.value.oif
-  });
-
-  if (!formValue.value.sipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'saddr',
-      Value: formValue.value.sip
-    });
-  }
-
-  if (!formValue.value.dipAny) {
-    expr.push({
-      type: 'match',
-      protocol: 'ip',
-      field: 'daddr',
-      Value: formValue.value.dip
-    });
-  }
-
-  if (!formValue.value.masquerade) {
-    expr.push({
-      type: 'match',
-      protocol: 'snat',
-      field: 'ip to',
-      Value: formValue.value.snat
-    });
-  } else {
-    expr.push({
-      type: 'match',
-      protocol: 'masquerade',
-      field: '',
-      Value: ''
-    });
-  }
-
-  const { error } = await addFirewallPolicy({
-    chain,
-    comment: formValue.value.comment,
+  const { error } = await addSnatPolicy({
+    ...formValue.value,
     add: !(formValue.value.add === 1 || formValue.value.add === 3),
     position: formValue.value.add > 2 ? formValue.value.position : 0,
-    expr
+    snat: formValue.value.masquerade ? '' : formValue.value.snat,
+    dip: formValue.value.dipAny ? '' : formValue.value.dip,
+    sip: formValue.value.sipAny ? '' : formValue.value.sip
   });
   loading.value = false;
   if (error) return;
