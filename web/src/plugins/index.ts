@@ -7,7 +7,6 @@ export * from './loading';
 export * from './nprogress';
 export * from './iconify';
 export * from './dayjs';
-export * from './app';
 
 export function setupDirectives(app: App) {
   // 权限控制指令（演示）
