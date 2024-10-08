@@ -807,13 +807,20 @@ func (i *iptables) Init() {
 	// 判断是否存在默认规则，不存在则创建
 
 	loPattern := regexp.MustCompile(`^-A\s+INPUT\s+-i\s+lo\s+-j\s+ACCEPT$`)
-	isLo := false
 
 	dropPattern := regexp.MustCompile(`^-A\s+INPUT\s+-j\s+DROP$`)
-	isDrop := false
 
 	for _, v := range i.Filter.Rule {
 		v := strings.TrimSpace(v)
+
+		if loPattern.MatchString(v) {
+			continue
+		}
+
+		if dropPattern.MatchString(v) {
+			continue
+		}
+
 		if strings.Contains(v, fmt.Sprintf(" %s ", ChainName[INPUT])) || strings.HasSuffix(v, fmt.Sprintf(" %s", ChainName[INPUT])) {
 			continue
 		}
@@ -838,41 +845,19 @@ func (i *iptables) Init() {
 			continue
 		}
 
-		if loPattern.MatchString(v) {
-			isLo = true
-			continue
-		}
-
-		if dropPattern.MatchString(v) {
-			isDrop = true
-			continue
-		}
-
 		newFilterRules = append(newFilterRules, v)
 	}
 
-	//  增加默认规则
-	tmpRule := []string{}
-	if !isLo {
-		g.Log().Debug(context.Background(), "iptables add lo rule")
-		tmpRule = append(tmpRule, "-A INPUT -i lo -j ACCEPT")
-	}
-
-	tmpRule = append(tmpRule, []string{
+	i.Filter.Rule = append([]string{
+		"-A INPUT -i lo -j ACCEPT",
 		fmt.Sprintf("-A INPUT -j %s", ChainName[LIMIT_INPUT]),
 		fmt.Sprintf("-A INPUT -j %s", ChainName[INPUT]),
 		fmt.Sprintf("-A OUTPUT -j %s", ChainName[LIMIT_OUTPUT]),
 		fmt.Sprintf("-A OUTPUT -j %s", ChainName[OUTPUT]),
 		fmt.Sprintf("-A FORWARD -j %s", ChainName[LIMIT_FORWARD]),
 		fmt.Sprintf("-A FORWARD -j %s", ChainName[FORWARD]),
-	}...)
-
-	i.Filter.Rule = append(tmpRule, newFilterRules...)
-
-	if !isDrop {
-		g.Log().Debug(context.Background(), "iptables add DROP rule")
-		i.Filter.Rule = append(i.Filter.Rule, "-A INPUT -j DROP")
-	}
+	}, newFilterRules...)
+	i.Filter.Rule = append(i.Filter.Rule, "-A INPUT -j DROP")
 
 	newNatRules := []string{}
 
