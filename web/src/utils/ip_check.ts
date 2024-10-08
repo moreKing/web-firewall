@@ -43,6 +43,9 @@ export function checkIpAddr(ipaddr: string) {
   }
   let i = 0;
   for (i = 0; i < ss.length; i += 1) {
+    if (!/^[\d]+$/.test(ss[i])) {
+      return false;
+    }
     if (ss[i].trim() === '') {
       return false;
     }

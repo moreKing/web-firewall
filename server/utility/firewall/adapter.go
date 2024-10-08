@@ -2,8 +2,9 @@ package firewall
 
 import (
 	"context"
-	"github.com/gogf/gf/v2/frame/g"
 	"strings"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type Firewall interface {

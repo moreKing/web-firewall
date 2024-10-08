@@ -3,12 +3,13 @@ package firewall
 import (
 	"context"
 	"fmt"
-	"github.com/gogf/gf/v2/frame/g"
 	"os/exec"
 	"server/internal/dao"
 	"server/internal/model"
 	"server/internal/model/entity"
 	"strings"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 /**
@@ -144,7 +145,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		if input.Protocol == "icmp" {
 			tmp := strings.Split(input.Icmp, ",")
-			for i, _ := range tmp {
+			for i := range tmp {
 				tmp[i] = fmt.Sprintf("%s:%s ", tmp[i], input.Policy)
 			}
 
@@ -153,7 +154,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		if input.Protocol == "ct" {
 			tmp := strings.Split(input.Ct, ",")
-			for i, _ := range tmp {
+			for i := range tmp {
 				tmp[i] = fmt.Sprintf("%s:%s ", tmp[i], input.Policy)
 			}
 			line += fmt.Sprintf("ct state vmap { %s } ", strings.Join(tmp, ", "))
@@ -226,7 +227,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		if output.Protocol == "icmp" {
 			tmp := strings.Split(output.Icmp, ",")
-			for i, _ := range tmp {
+			for i := range tmp {
 				tmp[i] = fmt.Sprintf("%s:%s ", tmp[i], output.Policy)
 			}
 
@@ -235,7 +236,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 
 		if output.Protocol == "ct" {
 			tmp := strings.Split(output.Ct, ",")
-			for i, _ := range tmp {
+			for i := range tmp {
 				tmp[i] = fmt.Sprintf("%s:%s ", tmp[i], output.Policy)
 			}
 			line += fmt.Sprintf("ct state vmap { %s } ", strings.Join(tmp, ", "))
@@ -265,9 +266,9 @@ func (n *Nftables) Flush(ctx context.Context) error {
 		}
 		if limit.Protocol == "tcp" || limit.Protocol == "udp" {
 			if strings.Contains(limit.Port, ",") {
-				line += fmt.Sprintf("%s dport { %s } ", limit.Protocol, limit.Port)
+				line += fmt.Sprintf("%s sport { %s } ", limit.Protocol, limit.Port)
 			} else {
-				line += fmt.Sprintf("%s dport %s ", limit.Protocol, limit.Port)
+				line += fmt.Sprintf("%s sport %s ", limit.Protocol, limit.Port)
 			}
 		}
 
@@ -311,7 +312,7 @@ func (n *Nftables) Flush(ctx context.Context) error {
 		if strings.TrimSpace(item.Snat) != "" {
 			line += fmt.Sprintf(" snat ip to %s ", item.Snat)
 		} else {
-			line += fmt.Sprintf(" masquerade")
+			line += " masquerade"
 		}
 
 		g.Log().Debug(ctx, line)
