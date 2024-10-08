@@ -14,7 +14,7 @@ server:
   shellMode: bash # shell模式 仅支持 bash sh两种，设置成其他的无效默认sh
   shellLog: /var/log/web-firewall/shell
   logger:
-    path:                  "/var/log/web-firewall/server"   # 日志文件路径。默认为空，表示关闭，仅输出到终端
+    path:                  "/var/log/web-firewall/access"   # 日志文件路径。默认为空，表示关闭，仅输出到终端
     # file:                  "" # 日志文件格式。默认为"{Y-m-d}.log"
     prefix:                "access"            # 日志内容输出前缀。默认为空
     level:                 "info"         # 日志输出级别
@@ -28,7 +28,7 @@ server:
 
 
 logger:
-  path: "./log/"           # 日志文件路径。默认为空，表示关闭，仅输出到终端
+  path: "/var/log/web-firewall/log/"           # 日志文件路径。默认为空，表示关闭，仅输出到终端
   file: "{Y-m-d}.log"         # 日志文件格式。默认为"{Y-m-d}.log"
   prefix: ""                    # 日志内容输出前缀。默认为空
   level: "INFO"                 # 日志输出级别，不区分大小写 all 所有日志 DEBU < INFO < NOTI < WARN < ERRO < CRIT
@@ -56,12 +56,9 @@ firewall:
 
 database:
   logger:
-    path: "./log/sql"
+    path: "/var/log/web-firewall/sql"
     level: "info"
     stdout: false
   default:
     link:  "sqlite::@file(./resource/db.sqlite3)"
   debug: false
-
-
-
