@@ -40,16 +40,16 @@ rm -rf build
 mkdir -p build/web-firewalld
 
 cp $current_dir/script/* $current_dir/build/
-cp -r $current_dir/server/manifest build/web-firewalld/
-cp -r $current_dir/server/resource build/web-firewalld/
-cp -r $current_dir/server/server build/web-firewalld/
+cp -r $current_dir/server/manifest $current_dir/build/web-firewalld/
+cp -r $current_dir/server/resource $current_dir/build/web-firewalld/
+cp -r $current_dir/server/server $current_dir/build/web-firewalld/
 
 rm -rf $current_dir/build/web-firewalld/resource/public/html
-cp -r ~/firewalld-web/dist build/web-firewalld/resource/public/html
+cp -r ~/firewalld-web/dist $current_dir/build/web-firewalld/resource/public/html
 
 rm -rf $current_dir/build/web-firewalld/resource/*.sqlite3
 mv $current_dir/build/web-firewalld/resource/db.sqlite3.bak $current_dir/build/web-firewalld/resource/db.sqlite3
-rm -rf $current_dir/server/manifest/config/config.yaml
-mv $current_dir/server/manifest/config/config.yaml.prod $current_dir/server/manifest/config/config.yaml
+rm -rf $current_dir/build/web-firewalld/manifest/config/config.yaml
+mv $current_dir/build/web-firewalld/manifest/config/config.yaml.prod $current_dir/build/web-firewalld/manifest/config/config.yaml
 
 rm -rf ~/firewalld-web

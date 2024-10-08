@@ -12,20 +12,19 @@ server:
   accessLogEnabled: true
   #  shell操作日志存放路径
   shellMode: bash # shell模式 仅支持 bash sh两种，设置成其他的无效默认sh
-  shellLog: /var/log/web-firewall
-
+  shellLog: /var/log/web-firewall/shell
   logger:
-    #path:                  "./log/"   # 日志文件路径。默认为空，表示关闭，仅输出到终端
+    path:                  "/var/log/web-firewall/server"   # 日志文件路径。默认为空，表示关闭，仅输出到终端
     # file:                  "" # 日志文件格式。默认为"{Y-m-d}.log"
-    # prefix:                ""            # 日志内容输出前缀。默认为空
-    level:                 "info"         # 日志输出级别
+    prefix:                "access"            # 日志内容输出前缀。默认为空
+    level:                 "all"         # 日志输出级别
     # stdout:                false          # 日志是否同时输出到终端。默认true
     # rotateSize:            0             # 按照日志文件大小对文件进行滚动切分。默认为0，表示关闭滚动切分特性
     # rotateExpire:          0             # 按照日志文件时间间隔对文件滚动切分。默认为0，表示关闭滚动切分特性
-    # rotateBackupLimit:     0             # 按照切分的文件数量清理切分文件，当滚动切分特性开启时有效。默认为0，表示不备份，切分则删除
+    rotateBackupLimit: 30             # 按照切分的文件数量清理切分文件，当滚动切分特性开启时有效。默认为0，表示不备份，切分则删除
     # rotateBackupExpire:    0             # 按照切分的文件有效期清理切分文件，当滚动切分特性开启时有效。默认为0，表示不备份，切分则删除
     # rotateBackupCompress:  0             # 滚动切分文件的压缩比（0-9）。默认为0，表示不压缩
-    # rotateCheckInterval:   "1d"          # 滚动切分的时间检测间隔，一般不需要设置。默认为1小时
+    rotateCheckInterval: "1d"          # 滚动切分的时间检测间隔，一般不需要设置。默认为1小时
 
 
 logger:
@@ -58,7 +57,7 @@ firewall:
 database:
   logger:
     path: "./log/sql"
-    level: "all"
+    level: "info"
     stdout: true
   default:
     link:  "sqlite::@file(./resource/db.sqlite3)"

@@ -854,6 +854,7 @@ func (i *iptables) Init() {
 	//  增加默认规则
 	tmpRule := []string{}
 	if !isLo {
+		g.Log().Debug(context.Background(), "iptables add lo rule")
 		tmpRule = append(tmpRule, "-A INPUT -i lo -j ACCEPT")
 	}
 
@@ -869,6 +870,7 @@ func (i *iptables) Init() {
 	i.Filter.Rule = append(tmpRule, newFilterRules...)
 
 	if !isDrop {
+		g.Log().Debug(context.Background(), "iptables add DROP rule")
 		i.Filter.Rule = append(i.Filter.Rule, "-A INPUT -j DROP")
 	}
 
