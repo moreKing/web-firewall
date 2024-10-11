@@ -133,7 +133,8 @@ async function onSubmit() {
 
   const { error } = await updateDnatPolicy({
     id: props.row.id,
-    ...formValue.value
+    ...formValue.value,
+    dip: formValue.value.dipAny ? '' : formValue.value.dip
   });
   loading.value = false;
   if (error) return;

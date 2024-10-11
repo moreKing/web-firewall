@@ -132,6 +132,7 @@ async function onSubmit() {
 
   const { error } = await addDnatPolicy({
     ...formValue.value,
+    dip: formValue.value.dipAny ? '' : formValue.value.dip,
     add: !(formValue.value.add === 1 || formValue.value.add === 3),
     position: formValue.value.add > 2 ? formValue.value.position : 0
   });
