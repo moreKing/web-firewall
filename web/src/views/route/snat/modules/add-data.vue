@@ -138,7 +138,7 @@ async function enterModal() {
 
 const selectDnatOptions = ref([]);
 function selectEth(_value: any, v2: any) {
-  formValue.value.dip = '';
+  formValue.value.snat = '';
   selectDnatOptions.value = v2.ip.map((item: any) => {
     return {
       label: item,
@@ -213,7 +213,12 @@ function selectEth(_value: any, v2: any) {
         </NFormItem>
 
         <NFormItem v-if="!formValue.dipAny" label=" " path="dip">
-          <NSelect v-model:value="formValue.dip" :options="selectDnatOptions" />
+          <NSpace vertical :size="14" class="w-full">
+            <NInput v-model:value="formValue.dip" />
+            <span class="mb-30px mt-10px font-size-14px text-truegray-400">
+              {{ $t('page.firewallPolicy.ipTip') }}
+            </span>
+          </NSpace>
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.nat')" path="masquerade">
@@ -230,7 +235,7 @@ function selectEth(_value: any, v2: any) {
         </NFormItem>
 
         <NFormItem v-if="!formValue.masquerade" label=" " path="snat">
-          <NInput v-model:value="formValue.snat" />
+          <NSelect v-model:value="formValue.snat" :options="selectDnatOptions" />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.position')" path="position">
