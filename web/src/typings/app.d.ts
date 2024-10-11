@@ -748,6 +748,7 @@ declare namespace App {
           dynamicIp: string;
           destIp: string;
           nat: string;
+          intranetIp: string;
           destPort: string;
           sourcePort: string;
           natPort: string;

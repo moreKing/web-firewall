@@ -18,12 +18,11 @@ type GetDnatPolicyRes struct {
 type AddDnatPolicyReq struct {
 	g.Meta `path:"/dnat"  tags:"路由策略" method:"post" summary:"添加目的地址转换策略"`
 
-	Protocol string           `json:"protocol"`
-	Dip      string           `json:"dip" v:"ipv4"`
-	Iif      string           `json:"iif" v:"required"`
-	Port     []model.RulePort `json:"port"`
-	Dnat     string           `json:"dnat" v:"ipv4"`
-	Comment  string           `json:"comment"`
+	Dip     string           `json:"dip" v:"ipv4"`
+	Iif     string           `json:"iif" v:"required"`
+	Port    []model.RulePort `json:"port"`
+	Dnat    string           `json:"dnat" v:"ipv4"`
+	Comment string           `json:"comment"`
 
 	Add      bool `json:"add"`      // 使用add 还是insert
 	Position int  `json:"position"` // 添加规则时插入的位置
@@ -37,12 +36,11 @@ type ReplaceDnatPolicyReq struct {
 	g.Meta `path:"/dnat/:id"  tags:"路由策略" method:"put" summary:"修改目的地址转换策略"`
 	ID     int64 `json:"id" path:"id" example:"1"`
 
-	Protocol string           `json:"protocol"`
-	Dip      string           `json:"dip" v:"ipv4"`
-	Iif      string           `json:"iif" v:"required"`
-	Port     []model.RulePort `json:"port"`
-	Dnat     string           `json:"dnat" v:"ipv4"`
-	Comment  string           `json:"comment"`
+	Dip     string           `json:"dip" v:"ipv4"`
+	Iif     string           `json:"iif" v:"required"`
+	Port    []model.RulePort `json:"port"`
+	Dnat    string           `json:"dnat" v:"ipv4"`
+	Comment string           `json:"comment"`
 }
 type ReplaceDnatPolicyRes struct {
 }

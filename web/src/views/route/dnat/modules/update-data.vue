@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { $t } from '@/locales';
 import { updateDnatPolicy } from '@/service/api';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { checkIpAddr, checkIpMask } from '@/utils/ip_check';
+import { checkIpAddr, checkIpMask, checkPortString } from '@/utils/ip_check';
 
 const { formRef, validate } = useNaiveForm();
 
@@ -30,11 +30,13 @@ const networkOptions = computed(() => {
 const loading = ref(false);
 
 interface FormValue {
-  protocol: null | string;
+  protocol: string;
   dipAny: boolean;
   dip: string;
   dnat: string;
   port: {
+    pair: [string, string];
+    protocol: string;
     key: string;
     value: string;
   }[];
@@ -45,7 +47,7 @@ interface FormValue {
 }
 
 const formValue = ref<FormValue>({
-  protocol: null,
+  protocol: '',
   dipAny: true,
   dip: '',
   dnat: '',
@@ -109,7 +111,7 @@ const rules = computed<any>(() => {
 
 function initData() {
   formValue.value = {
-    protocol: null,
+    protocol: '',
     dipAny: true,
     dip: '',
     dnat: '',
@@ -141,7 +143,19 @@ async function enterModal() {
   formValue.value = props.row;
   formValue.value.dipAny = !formValue.value.dip;
 
+  for (let index = 0; index < formValue.value.port.length; index += 1) {
+    if (!formValue.value.port[index].protocol || formValue.value.port[index].protocol === '') {
+      formValue.value.port[index].protocol = formValue.value.protocol;
+    }
+    formValue.value.port[index].pair = [formValue.value.port[index].key, formValue.value.port[index].value];
+  }
+
   loading.value = false;
+}
+
+function portHandle(index: number, v: string[]) {
+  formValue.value.port[index].key = v[0];
+  formValue.value.port[index].value = v[1];
 }
 </script>
 
@@ -150,7 +164,7 @@ async function enterModal() {
     v-model:show="showModal"
     :mask-closable="false"
     preset="card"
-    class="w-700px"
+    class="w-800px"
     :title="$t('common.edit')"
     :bordered="false"
     :segmented="{
@@ -172,23 +186,6 @@ async function enterModal() {
         <NFormItem :label="$t('page.firewallPolicy.sourceEthernet')" path="iif">
           <!-- <NInput v-model:value="formValue.protocol" /> -->
           <NSelect v-model:value="formValue.iif" :options="networkOptions" />
-        </NFormItem>
-
-        <NFormItem :label="$t('page.firewallPolicy.protocol')" path="protocol">
-          <!-- <NInput v-model:value="formValue.protocol" /> -->
-          <NSelect
-            v-model:value="formValue.protocol"
-            :options="[
-              {
-                label: 'tcp',
-                value: 'tcp'
-              },
-              {
-                label: 'udp',
-                value: 'udp'
-              }
-            ]"
-          />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.destIp')" path="dipAny">
@@ -213,7 +210,7 @@ async function enterModal() {
           </NSpace>
         </NFormItem>
 
-        <NFormItem :label="$t('page.firewallPolicy.nat')" path="dnat">
+        <NFormItem :label="$t('page.firewallPolicy.intranetIp')" path="dnat">
           <NInput v-model:value="formValue.dnat" />
         </NFormItem>
 
@@ -240,20 +237,46 @@ async function enterModal() {
             </template>
 
             <template #default="{ index }">
-              <div class="flex">
+              <NSpace :wrap="false">
+                <NFormItem
+                  :path="`port[${index}].protocol`"
+                  ignore-path-change
+                  :rule="{ required: true, trigger: ['input', 'change'], message: $t('form.required') }"
+                >
+                  <NSelect
+                    v-model:value="formValue.port[index].protocol"
+                    class="w-120px"
+                    :options="[
+                      {
+                        label: 'tcp',
+                        value: 'tcp'
+                      },
+                      {
+                        label: 'udp',
+                        value: 'udp'
+                      },
+                      {
+                        label: 'tcp+udp',
+                        value: 'tcp+udp'
+                      }
+                    ]"
+                  />
+                </NFormItem>
+
                 <NFormItem
                   ignore-path-change
                   :show-label="false"
                   :path="`port[${index}].key`"
                   :rule="{
-                    trigger: ['input', 'change'],
-                    validator(_rule: any, value: string) {
-                      if (!value || value.length === 0) return new Error($t('form.required'));
-                      const pattern = /^\d+$/;
-                      if (!pattern.test(value)) return new Error($t('page.firewallPolicy.portValidationFailure'));
-
-                      const intItem = Number.parseInt(value, 10);
-                      if (intItem < 0 || intItem > 65535) {
+                    type: 'array',
+                    trigger: ['blur'],
+                    validator() {
+                      //  判断转换前的端口
+                      if (!checkPortString(formValue.port[index].key)) {
+                        return new Error($t('page.firewallPolicy.portValidationFailure'));
+                      }
+                      // 判断转换后的端口
+                      if (!checkPortString(formValue.port[index].value)) {
                         return new Error($t('page.firewallPolicy.portValidationFailure'));
                       }
                       return true;
@@ -261,40 +284,15 @@ async function enterModal() {
                   }"
                 >
                   <NInput
-                    v-model:value="formValue.port[index].key"
-                    :placeholder="$t('page.firewallPolicy.destPort')"
+                    v-model:value="formValue.port[index].pair"
+                    pair
+                    :placeholder="[$t('page.firewallPolicy.destPort'), $t('page.firewallPolicy.natPort')]"
+                    separator="→"
                     @keydown.enter.prevent
-                  />
-                  <!-- 由于在 input 元素里按回车会导致 form 里面的 button 被点击，所以阻止了默认行为 -->
-                </NFormItem>
-                <!-- <div class="ml-8px mr-8px h-34px lh-34px">=</div> -->
-                <icon-carbon:arrow-right class="ml-8px mr-8px h-34px lh-34px" />
-                <NFormItem
-                  ignore-path-change
-                  :show-label="false"
-                  :path="`port[${index}].value`"
-                  :rule="{
-                    trigger: ['input', 'change'],
-                    validator(_rule: any, value: string) {
-                      if (!value || value.length === 0) return new Error($t('form.required'));
-                      const pattern = /^\d+$/;
-                      if (!pattern.test(value)) return new Error($t('page.firewallPolicy.portValidationFailure'));
-
-                      const intItem = Number.parseInt(value, 10);
-                      if (intItem < 0 || intItem > 65535) {
-                        return new Error($t('page.firewallPolicy.portValidationFailure'));
-                      }
-                      return true;
-                    }
-                  }"
-                >
-                  <NInput
-                    v-model:value="formValue.port[index].value"
-                    :placeholder="$t('page.firewallPolicy.natPort')"
-                    @keydown.enter.prevent
+                    @update:value="v => portHandle(index, v)"
                   />
                 </NFormItem>
-              </div>
+              </NSpace>
             </template>
           </NDynamicInput>
         </NFormItem>

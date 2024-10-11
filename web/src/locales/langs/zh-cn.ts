@@ -588,9 +588,10 @@ const local: App.I18n.Schema = {
       dynamicIp: '动态IP',
       destIp: '目的IP',
       nat: '地址转换',
+      intranetIp: '内网IP',
       destPort: '目的端口',
       sourcePort: '源端口',
-      natPort: '转换端口',
+      natPort: '端口映射',
       portType: '端口类型'
     },
     kernel: {

@@ -341,20 +341,24 @@ func (n *Nftables) Flush(ctx context.Context) error {
 			}
 		}
 
-		if item.Protocol == "tcp" || item.Protocol == "udp" {
-			var ports []string
-			for _, port := range item.Port {
-				ports = append(ports, fmt.Sprintf("%d : %s . %d", port.Key, item.Dnat, port.Value))
+		// 兼容1.3.0版本
+		for _, port := range item.Port {
+			// 判断port是否有protocol，有就用 没有就使用全局的旧版本数据
+			tmpProtocol := strings.TrimSpace(port.Protocol)
+			if strings.TrimSpace(port.Protocol) == "" {
+				tmpProtocol = strings.TrimSpace(item.Protocol)
 			}
-			line += fmt.Sprintf(" dnat ip to %s dport map { %s }", item.Protocol, strings.Join(ports, ", "))
+			if tmpProtocol == "tcp" || tmpProtocol == "udp" {
+				ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[DNAT], line+fmt.Sprintf("%s dport %v  dnat ip to %s:%v", tmpProtocol, port.Key, item.Dnat, port.Value)))
+			} else {
+				ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[DNAT], line+fmt.Sprintf("tcp dport %v  dnat ip to %s:%v", port.Key, item.Dnat, port.Value)))
+				ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[DNAT], line+fmt.Sprintf("udp dport %v  dnat ip to %s:%v", port.Key, item.Dnat, port.Value)))
+
+			}
+
 		}
-
-		g.Log().Debug(ctx, line)
-
-		ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[DNAT], line))
 	}
 	// todo 转发策略
-
 	var forwardList []entity.ForwardRules
 	err = dao.ForwardRules.Ctx(ctx).OrderAsc(dao.ForwardRules.Columns().Position).Scan(&forwardList)
 	if err != nil {

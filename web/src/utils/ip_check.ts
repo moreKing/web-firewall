@@ -241,3 +241,28 @@ export function checkPort(port: string, portRange: string) {
   }
   return portNum === Number.parseInt(portRange, 10);
 }
+
+// 判断端口是否合法
+export function checkPortString(port: string) {
+  if (!port || port === '') return false;
+  if (port.includes('-')) {
+    const ss = port.split('-');
+    if (ss.length !== 2) {
+      return false;
+    }
+
+    const pattern = /^\d+$/;
+    if (!pattern.test(ss[0])) return false;
+    if (!pattern.test(ss[1])) return false;
+
+    const start = Number.parseInt(ss[0], 10);
+    const end = Number.parseInt(ss[1], 10);
+    if (start <= 0 || end <= 0 || start > 65535 || end > 65535) return false;
+    return start < end;
+  }
+  const pattern = /^\d+$/;
+  if (!pattern.test(port)) return false;
+
+  const start = Number.parseInt(port, 10);
+  return !(start <= 0 || start > 65535);
+}

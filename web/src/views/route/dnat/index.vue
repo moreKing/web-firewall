@@ -97,14 +97,6 @@ const columns = computed<any>(() => [
 
   {
     show: true,
-    title: $t('page.firewallPolicy.protocol'),
-    align: 'center',
-    minWidth: 100,
-    key: 'protocol'
-  },
-
-  {
-    show: true,
     title: $t('page.firewallPolicy.destIp'),
     align: 'center',
     minWidth: 200,
@@ -164,6 +156,10 @@ const columns = computed<any>(() => [
         {
           default: () =>
             row.port.map((x: any) => {
+              let protocol = x.protocol;
+              if (!protocol || protocol === '') {
+                protocol = row.protocol;
+              }
               return h(
                 NTag,
 
@@ -172,7 +168,7 @@ const columns = computed<any>(() => [
                   type: 'success'
                 },
                 {
-                  default: () => `${x.key} → ${x.value}`
+                  default: () => `${protocol}: ${x.key} → ${x.value}`
                 }
               );
             })

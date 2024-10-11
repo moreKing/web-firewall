@@ -29,7 +29,7 @@ func (c *ControllerV1) ReplaceDnatPolicy(ctx context.Context, req *v1.ReplaceDna
 
 		_, err := tx.Ctx(ctx).Model(&do.DnatRules{}).Where(dao.DnatRules.Columns().Id, req.ID).Update(do.DnatRules{
 
-			Protocol: req.Protocol,
+			Protocol: "",
 			Dip:      req.Dip,
 			Iif:      req.Iif,
 			Port:     req.Port,

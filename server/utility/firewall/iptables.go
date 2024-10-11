@@ -496,24 +496,35 @@ func (i *Iptables) Flush(ctx context.Context) error {
 	}
 
 	for _, item := range dnatList {
-		if item.Protocol == "tcp" || item.Protocol == "udp" {
-			for _, dip := range strings.Split(item.Dip, ",") {
-				for _, port := range item.Port {
-					tmpRule := fmt.Sprintf("-A %s", ChainName[DNAT])
-					tmpRule += fmt.Sprintf(" -i %s", item.Iif)
 
-					if strings.TrimSpace(dip) == "" {
-
-					} else if strings.Contains(dip, "-") {
-						tmpRule += fmt.Sprintf(" -m iprange --dst-range  %s ", dip)
-					} else {
-						tmpRule += fmt.Sprintf(" -d %s ", dip)
-					}
-
-					tmpRule += fmt.Sprintf(" -p %s --dport %d -j DNAT --to-destination %s:%d ", item.Protocol, port.Key, item.Dnat, port.Value)
-
-					tmp.Nat.Rule = append(tmp.Nat.Rule, tmpRule)
+		for _, dip := range strings.Split(item.Dip, ",") {
+			for _, port := range item.Port {
+				tmpProtocol := port.Protocol
+				if tmpProtocol == "" {
+					tmpProtocol = item.Protocol
 				}
+
+				tmpRule := fmt.Sprintf("-A %s", ChainName[DNAT])
+				tmpRule += fmt.Sprintf(" -i %s", item.Iif)
+				if strings.TrimSpace(dip) == "" {
+				} else if strings.Contains(dip, "-") {
+					tmpRule += fmt.Sprintf(" -m iprange --dst-range  %s ", dip)
+				} else {
+					tmpRule += fmt.Sprintf(" -d %s ", dip)
+				}
+				srcPort := fmt.Sprintf("%v", port.Key)
+
+				srcPort = strings.Replace(srcPort, "-", ":", -1)
+
+				if tmpProtocol == "tcp" || tmpProtocol == "udp" {
+					tmpRule += fmt.Sprintf(" -p %s --dport %v -j DNAT --to-destination %s:%v ", tmpProtocol, srcPort, item.Dnat, port.Value)
+					tmp.Nat.Rule = append(tmp.Nat.Rule, tmpRule)
+				} else {
+					//tmpRule += fmt.Sprintf(" -p tcp --dport %d -j DNAT --to-destination %s:%d ", port.Key, item.Dnat, port.Value)
+					tmp.Nat.Rule = append(tmp.Nat.Rule, tmpRule+fmt.Sprintf(" -p tcp --dport %s -j DNAT --to-destination %s:%v ", srcPort, item.Dnat, port.Value))
+					tmp.Nat.Rule = append(tmp.Nat.Rule, tmpRule+fmt.Sprintf(" -p udp --dport %s -j DNAT --to-destination %s:%v ", srcPort, item.Dnat, port.Value))
+				}
+
 			}
 		}
 

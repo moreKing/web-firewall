@@ -51,8 +51,7 @@ CONTINUE:
 		// 添加策略
 		g.Log().Debug(ctx, "port----->  ", req.Port)
 		id, err = tx.Ctx(ctx).Model(&do.DnatRules{}).InsertAndGetId(&do.DnatRules{
-
-			Protocol:  req.Protocol,
+			Protocol:  "",
 			Dip:       req.Dip,
 			Iif:       req.Iif,
 			Port:      req.Port,

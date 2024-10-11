@@ -591,7 +591,8 @@ const local: App.I18n.Schema = {
       destPort: 'Destination Port',
       sourcePort: 'Source Port',
       natPort: 'NAT Port',
-      portType: 'Port Type'
+      portType: 'Port Type',
+      intranetIp: 'Intranet IP'
     },
     kernel: {
       forward: 'Forward',
