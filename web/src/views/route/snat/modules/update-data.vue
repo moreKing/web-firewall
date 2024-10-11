@@ -124,16 +124,10 @@ async function onSubmit() {
 
 async function enterModal() {
   formValue.value = props.row;
-  if (!props.row.sip || props.row.sip === '') {
-    formValue.value.sipAny = true;
-  }
-  if (!props.row.dip || props.row.dip === '') {
-    formValue.value.dipAny = true;
-  }
 
-  if (!props.row.snat || props.row.snat === '') {
-    formValue.value.masquerade = true;
-  }
+  formValue.value.sipAny = !props.row.sip || props.row.sip === '';
+  formValue.value.dipAny = !props.row.dip || props.row.dip === '';
+  formValue.value.masquerade = !props.row.snat || props.row.snat === '';
 
   loading.value = false;
 }
