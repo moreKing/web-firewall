@@ -21,7 +21,9 @@ const networkOptions = computed(() => {
   return props.network.map((item: any) => {
     return {
       label: item.name,
-      value: item.name
+      value: item.name,
+      ip: item.ip,
+      disabled: !(item.ip.length > 0)
     };
   });
 });
@@ -147,6 +149,17 @@ function portHandle(index: number, v: string[]) {
   formValue.value.port[index].key = v[0];
   formValue.value.port[index].value = v[1];
 }
+
+const selectDnatOptions = ref([]);
+function selectEth(_value: any, v2: any) {
+  formValue.value.dip = '';
+  selectDnatOptions.value = v2.ip.map((item: any) => {
+    return {
+      label: item,
+      value: item
+    };
+  });
+}
 </script>
 
 <template>
@@ -175,7 +188,7 @@ function portHandle(index: number, v: string[]) {
       >
         <NFormItem :label="$t('page.firewallPolicy.sourceEthernet')" path="iif">
           <!-- <NInput v-model:value="formValue.protocol" /> -->
-          <NSelect v-model:value="formValue.iif" :options="networkOptions" />
+          <NSelect v-model:value="formValue.iif" :options="networkOptions" @update:value="selectEth" />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.destIp')" path="dipAny">
@@ -192,12 +205,7 @@ function portHandle(index: number, v: string[]) {
         </NFormItem>
 
         <NFormItem v-if="!formValue.dipAny" label=" " path="dip">
-          <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.dip" />
-            <span class="mb-30px mt-10px font-size-14px text-truegray-400">
-              {{ $t('page.firewallPolicy.ipTip') }}
-            </span>
-          </NSpace>
+          <NSelect v-model:value="formValue.dip" :options="selectDnatOptions" />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.intranetIp')" path="dnat">
@@ -281,38 +289,7 @@ function portHandle(index: number, v: string[]) {
                     @keydown.enter.prevent
                     @update:value="v => portHandle(index, v)"
                   />
-                  <!-- 由于在 input 元素里按回车会导致 form 里面的 button 被点击，所以阻止了默认行为 -->
                 </NFormItem>
-                <!-- <div class="ml-8px mr-8px h-34px lh-34px">=</div> -->
-                <!--
- <icon-carbon:arrow-right class="ml-8px mr-8px h-34px lh-34px" />
-                <NFormItem
-                  ignore-path-change
-                  :show-label="false"
-                  :path="`port[${index}].value`"
-                  :rule="{
-                    trigger: ['input', 'change'],
-                    validator(_rule: any, value: string) {
-                      if (!value || value.length === 0) return new Error($t('form.required'));
-                      const pattern = /^\d+$/;
-                      if (!pattern.test(value)) return new Error($t('page.firewallPolicy.portValidationFailure'));
-
-                      const intItem = Number.parseInt(value, 10);
-                      if (intItem < 0 || intItem > 65535) {
-                        return new Error($t('page.firewallPolicy.portValidationFailure'));
-                      }
-                      return true;
-                    }
-                  }"
-                >
-                  <NInput
-                    v-model:value="formValue.port[index].value"
-                    :placeholder="$t('page.firewallPolicy.natPort')"
-                    :show-button="false"
-                    @keydown.enter.prevent
-                  />
-                </NFormItem>
--->
               </NSpace>
             </template>
           </NDynamicInput>

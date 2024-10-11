@@ -21,7 +21,9 @@ const networkOptions = computed(() => {
   return props.network.map((item: any) => {
     return {
       label: item.name,
-      value: item.name
+      value: item.name,
+      ip: item.ip,
+      disabled: !(item.ip.length > 0)
     };
   });
 });
@@ -133,6 +135,17 @@ async function onSubmit() {
 async function enterModal() {
   loading.value = false;
 }
+
+const selectDnatOptions = ref([]);
+function selectEth(_value: any, v2: any) {
+  formValue.value.dip = '';
+  selectDnatOptions.value = v2.ip.map((item: any) => {
+    return {
+      label: item,
+      value: item
+    };
+  });
+}
 </script>
 
 <template>
@@ -161,7 +174,7 @@ async function enterModal() {
       >
         <NFormItem :label="$t('page.firewallPolicy.destinationEthernet')" path="oif">
           <!-- <NInput v-model:value="formValue.protocol" /> -->
-          <NSelect v-model:value="formValue.oif" :options="networkOptions" />
+          <NSelect v-model:value="formValue.oif" :options="networkOptions" @update:value="selectEth" />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.sourceIp')" path="sipAny">
@@ -200,12 +213,7 @@ async function enterModal() {
         </NFormItem>
 
         <NFormItem v-if="!formValue.dipAny" label=" " path="dip">
-          <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.dip" />
-            <span class="mb-30px mt-10px font-size-14px text-truegray-400">
-              {{ $t('page.firewallPolicy.ipTip') }}
-            </span>
-          </NSpace>
+          <NSelect v-model:value="formValue.dip" :options="selectDnatOptions" />
         </NFormItem>
 
         <NFormItem :label="$t('page.firewallPolicy.nat')" path="masquerade">

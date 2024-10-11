@@ -22,9 +22,28 @@ func (s *sNetwork) GetNetwork() (*[]model.Network, error) {
 	}
 
 	for _, stat := range interfaces {
+		if stat.Name == "lo" {
+			continue
+		}
+		addrs, err := stat.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		ips := []string{}
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					ips = append(ips, ipnet.IP.To4().String())
+				}
+			}
+
+		}
+
 		network = append(network, model.Network{
 			Index: stat.Index,
 			Name:  stat.Name,
+			Ip:    ips,
 		})
 
 	}

@@ -11,6 +11,7 @@ type Home struct {
 }
 
 type Network struct {
-	Index int    `json:"index"`
-	Name  string `json:"name"`
+	Index int      `json:"index"`
+	Name  string   `json:"name"`
+	Ip    []string `json:"ip"`
 }
