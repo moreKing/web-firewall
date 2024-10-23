@@ -14,8 +14,8 @@ import (
 
 func (c *ControllerV1) DeleteInputPolicy(ctx context.Context, req *v1.DeleteInputPolicyReq) (res *v1.DeleteInputPolicyRes, err error) {
 
-	if req.ID == 3 {
-		return nil, errors.New("不能删除内置端口策略")
+	if req.ID == 4 {
+		return nil, errors.New("不能删除内置web端口策略")
 	}
 
 	err = dao.InputRules.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
