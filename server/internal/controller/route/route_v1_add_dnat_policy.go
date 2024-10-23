@@ -12,6 +12,7 @@ import (
 	"server/internal/model/do"
 	"server/internal/model/entity"
 	"server/internal/service"
+	"strings"
 	"time"
 
 	"server/api/route/v1"
@@ -19,7 +20,7 @@ import (
 
 func (c *ControllerV1) AddDnatPolicy(ctx context.Context, req *v1.AddDnatPolicyReq) (res *v1.AddDnatPolicyRes, err error) {
 
-	if len(req.Port) < 1 {
+	if len(req.Port) < 1 && strings.TrimSpace(req.Dip) == "" {
 		return nil, gerror.NewCode(gcode.CodeInvalidParameter, "端口映射不能为空")
 	}
 	// 判断出网卡是否存在

@@ -71,9 +71,10 @@ const rules = computed<any>(() => {
     port: [
       {
         trigger: ['input', 'change'],
-        type: 'array',
-        required: true,
-        message: $t('form.required')
+        validator(_rule: any, value: any[]) {
+          if (formValue.value.dipAny === true && (!value || value.length === 0)) return new Error($t('form.required'));
+          return true;
+        }
       }
     ],
 
@@ -247,7 +248,13 @@ function selectEth(_value: any, v2: any) {
                   </NIcon>
                 </NButton>
 
-                <NButton v-if="index > 0" strong secondary type="error" @click="() => remove(index)">
+                <NButton
+                  v-if="!(formValue.dipAny && index === 0)"
+                  strong
+                  secondary
+                  type="error"
+                  @click="() => remove(index)"
+                >
                   <NIcon>
                     <icon-carbon:subtract-large />
                   </NIcon>

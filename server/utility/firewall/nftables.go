@@ -340,6 +340,12 @@ func (n *Nftables) Flush(ctx context.Context) error {
 				line += fmt.Sprintf("ip daddr %s ", item.Dip)
 			}
 		}
+		// 判断port是否为空
+		if len(item.Port) == 0 {
+			// add rule inet web-firewall m_dnat ip daddr 192.168.1.200 dnat ip to 1.2.2.2
+			ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[DNAT], line+fmt.Sprintf("dnat ip to %s", item.Dnat)))
+			continue
+		}
 
 		// 兼容1.3.0版本
 		for _, port := range item.Port {

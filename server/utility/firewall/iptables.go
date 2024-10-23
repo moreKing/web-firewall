@@ -497,6 +497,13 @@ func (i *Iptables) Flush(ctx context.Context) error {
 
 	for _, item := range dnatList {
 
+		if len(item.Port) == 0 {
+			tmp.Nat.Rule = append(tmp.Nat.Rule, fmt.Sprintf("-A %s  -i %s  -d %s -j DNAT --to-destination %s",
+				ChainName[DNAT], item.Iif, item.Dip, item.Dnat))
+
+			continue
+		}
+
 		for _, dip := range strings.Split(item.Dip, ",") {
 			for _, port := range item.Port {
 				tmpProtocol := port.Protocol

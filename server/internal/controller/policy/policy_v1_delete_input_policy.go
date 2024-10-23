@@ -2,6 +2,7 @@ package policy
 
 import (
 	"context"
+	"errors"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
 	"server/internal/dao"
@@ -12,6 +13,10 @@ import (
 )
 
 func (c *ControllerV1) DeleteInputPolicy(ctx context.Context, req *v1.DeleteInputPolicyReq) (res *v1.DeleteInputPolicyRes, err error) {
+
+	if req.ID == 3 {
+		return nil, errors.New("不能删除内置端口策略")
+	}
 
 	err = dao.InputRules.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 
