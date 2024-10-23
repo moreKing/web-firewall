@@ -46,7 +46,8 @@ logger:
   writerColorEnable: false                 # 日志文件是否带上颜色。默认false，表示不带颜色
 
 firewall:
-  type: nftables # 配置防火墙类型，可选参数 nftables/iptables 默认nftables
+  type: auto # 配置防火墙类型，可选参数 nftables/iptables/auto 默认auto
+  typePriority: nftables # nftables/iptables type 为auto 设置优先检测防火墙类型，在某些系统下两种会共存 默认nftables
   chainPriority: #配置链的优先级，仅type为 nftables时生效
     input: 0
     output: 100

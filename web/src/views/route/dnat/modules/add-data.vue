@@ -227,7 +227,7 @@ function selectEth(_value: any, v2: any) {
                   </NIcon>
                 </NButton>
 
-                <NButton v-if="index > 0" strong secondary type="error" @click="() => remove(index)">
+                <NButton strong secondary type="error" @click="() => remove(index)">
                   <NIcon>
                     <icon-carbon:subtract-large />
                   </NIcon>
