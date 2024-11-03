@@ -2,6 +2,7 @@ package kernel
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gogf/gf/v2/frame/g"
 	"os"
@@ -61,9 +62,11 @@ func (s *sKernel) Set(ctx context.Context, m *model.Kernel) error {
 		}
 	}
 
-	if err := sysctl(); err != nil {
-		return err
-	}
+	// 不对结果进行判断 直接判断运行文件结果是否是预期结果
+	//if err := sysctl(); err != nil {
+	//	return err
+	//}
+
 	return nil
 }
 
@@ -121,6 +124,22 @@ WRITE:
 	_, err = file2.WriteString(strings.Join(list, "\n"))
 	if err != nil {
 		return err
+	}
+	// 不进行加载文件 直接写入运行文件中
+	err = exec.Command("sh", "-c", fmt.Sprintf("echo %s > /proc/sys/%s", value, strings.Replace(key, ".", "/", -1))).Run()
+	if err != nil {
+		return err
+	}
+
+	// 判断是否与预期一致
+
+	output, err := exec.Command("cat", fmt.Sprintf("/proc/sys/%s", strings.Replace(key, ".", "/", -1))).CombinedOutput()
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(string(output)) != strings.TrimSpace(value) {
+		return errors.New(fmt.Sprintf("参数 %s 修改失败,预期%s, 实际%s ", key, value, string(output)))
 	}
 
 	return nil
