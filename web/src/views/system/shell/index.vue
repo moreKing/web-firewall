@@ -16,6 +16,8 @@ let socket: WebSocket;
 let upZsession: any;
 
 let uploadStartTime = 0;
+let zmodemStatus = false;
+let zsentry: any;
 
 // 字符串转base64
 function getEncode64(str: string) {
@@ -37,6 +39,7 @@ function uploadFilecancel() {
     // 这里直接设置 _last_header_name 为 ZRINIT，就可以强制关闭了
     // eslint-disable-next-line no-underscore-dangle
     upZsession._last_header_name = 'ZRINIT';
+    // zsentry.close();
     upZsession.close();
   } catch (e) {
     window.console.log(e);
@@ -178,6 +181,7 @@ function uploadFile(files: any) {
         updateProgress(xfer, 'upload');
       },
       on_file_complete(obj: any) {
+        zmodemStatus = false;
         term.write('\r\n');
         socket.send(
           JSON.stringify({
@@ -236,7 +240,7 @@ onMounted(() => {
   // socket = new WebSocket('ws://162.14.109.53:8080/myssh')
 
   // 实现rz sz
-  const zsentry = new Zmodem.Sentry({
+  zsentry = new Zmodem.Sentry({
     to_terminal(_octets: any) {}, // i.e. send to the terminal
     on_detect(detection: any) {
       // 判断当前输入的命令是上传或者下载 ,当 Sentry 检测到新的 ZMODEM 时
@@ -248,6 +252,7 @@ onMounted(() => {
         promise = downloadFile(zsession);
         promise.catch(window.console.error.bind(console)).then(() => {});
       } else {
+        zmodemStatus = true; // 上传
         upZsession = zsession;
         // 打开文件选择对话框
         // showModal.value = true
@@ -388,11 +393,34 @@ onMounted(() => {
     }
   });
 });
+
+function handleKeyDown(event: any) {
+  // 判断是否按下 Ctrl (event.ctrlKey) 和 C 键 (event.key === "c")
+  if (event.ctrlKey && event.key === 'c') {
+    if (zmodemStatus) {
+      uploadFilecancel();
+      try {
+        upZsession.abort();
+      } catch (e) {
+        window.console.log(e);
+      } finally {
+        zmodemStatus = false;
+        term.write('\r\n\x1B[1;3;31m 中止上传\x1B[0m !\r\n');
+      }
+
+      // upZsession.close();
+    }
+  }
+
+  if (event.ctrlKey && event.key === 'x') {
+    event.preventDefault();
+  }
+}
 </script>
 
 <template>
   <div>
-    <div ref="terminalBox" class="min-height"></div>
+    <div ref="terminalBox" class="min-height" @keyup="handleKeyDown"></div>
   </div>
 </template>
 

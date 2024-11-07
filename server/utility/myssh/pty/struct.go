@@ -188,6 +188,7 @@ func (s *Shell) Send2Shell() {
 					return
 				}
 			case "stdin":
+				g.Log().Debug(s.Ctx, string(msg.Data))
 				_, err = s.Pty.Write(msg.Data)
 				if err != nil {
 					fmt.Println("发送pty数据失败：", err)
@@ -202,6 +203,17 @@ func (s *Shell) Send2Shell() {
 			case "ignore":
 				// 其他
 				fmt.Println(string(msg.Data))
+
+			case "sz-break":
+				_, err = s.Pty.Write(ZModemCancel)
+				g.Log().Debug(s.Ctx, "发送中断信号")
+				if err != nil {
+					fmt.Println("发送pty数据失败：", err)
+				}
+
+			default:
+				g.Log().Debug(s.Ctx, string(msg.Data))
+
 			}
 
 		}
@@ -225,6 +237,7 @@ func (s *Shell) Send2Web() {
 	for {
 		select {
 		case <-s.Ctx.Done():
+			g.Log().Info(s.Ctx, "检测到上下文退出")
 			return
 
 		default:
@@ -233,6 +246,7 @@ func (s *Shell) Send2Web() {
 			n, err := s.Pty.Read(sshOut)
 			if err != nil {
 				s.Cancel()
+				g.Log().Info(s.Ctx, "读取数据失败")
 				g.Log().Error(s.Ctx, err)
 				return
 			}
@@ -285,6 +299,7 @@ func (s *Shell) Send2Web() {
 				} else {
 					//判断当前状态是否是文件上传或下载， 再判断包有没有文件传输的信息
 					if s.ZModemSZ {
+						//g.Log().Debug(s.Ctx, "文件传输循环")
 						//判断是否有结束标记
 						if x, ok := IsContain(sshOut[:n], ZModemSZEnd); ok { //判断是完成下载
 							s.ZModemSZ = false
@@ -310,12 +325,12 @@ func (s *Shell) Send2Web() {
 							_ = s.Websocket.WriteMessage(websocket.BinaryMessage, ZModemRZEnd)
 							if len(x) != 0 {
 								_ = s.Websocket.WriteJSON(&WebMsg{Type: "console", Data: x})
-
 							}
 						} else if _, ok := IsContain(sshOut[:n], ZModemCancel); ok {
 							s.ZModemRZ = false
 							_ = s.Websocket.WriteMessage(websocket.BinaryMessage, sshOut[:n])
 							fmt.Println("ssh-->web" + string(sshOut[:n]))
+							g.Log().Debug(context.Background(), "取消rz")
 						} else {
 							// rz 上传过程中服务器端还是会给客户端发送一些信息，比如心跳
 							//ws.Ws.WriteJSON(&message{Type: messageTypeConsole, Data: sshOut[:n]})
@@ -354,10 +369,13 @@ func (s *Shell) Send2Web() {
 
 							if y, ok := IsContain(x, ZModemCancel); ok {
 								// 下载不存在的文件以及文件夹(zmodem 不支持下载文件夹)时
+								g.Log().Info(s.Ctx, "下载不存在的文件以及文件夹(zmodem 不支持下载文件夹)")
+								//s.ZModemSZ = false
 								_ = s.Websocket.WriteJSON(&WebMsg{Type: "stdin", Data: y})
 								// mySSh.Websocket.WriteJSON(&WebMsg{Type: "stdin", ReslutData: string(y)})
 
 							} else {
+								g.Log().Info(s.Ctx, "开始下载文件 ZModemSZStart  ")
 								s.ZModemSZ = true
 								if len(x) != 0 {
 									_ = s.Websocket.WriteJSON(&WebMsg{Type: "console", Data: x})
@@ -367,7 +385,7 @@ func (s *Shell) Send2Web() {
 							}
 
 						} else if x, ok := IsContain(sshOut[:n], ZModemRZStart); ok {
-
+							g.Log().Debug(s.Ctx, "开始下载文件 ZModemRZStart")
 							s.ZModemRZ = true
 							if len(x) != 0 {
 								_ = s.Websocket.WriteJSON(&WebMsg{Type: "console", Data: x})
@@ -375,7 +393,7 @@ func (s *Shell) Send2Web() {
 							_ = s.Websocket.WriteMessage(websocket.BinaryMessage, ZModemRZStart)
 
 						} else if x, ok := IsContain(sshOut[:n], ZModemRZEStart); ok {
-
+							g.Log().Debug(s.Ctx, "开始下载文件 ZModemRZEStart")
 							s.ZModemRZ = true
 							if len(x) != 0 {
 								_ = s.Websocket.WriteJSON(&WebMsg{Type: "console", Data: x})
@@ -452,5 +470,7 @@ func (s *Shell) Stop() {
 	// 最后释放，避免panic
 	_ = s.Websocket.Close()
 	_ = s.Pty.Close()
+
+	g.Log().Info(s.Ctx, "停止所有会话")
 
 }
