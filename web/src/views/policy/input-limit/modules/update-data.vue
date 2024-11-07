@@ -193,7 +193,14 @@ async function enterModal() {
 
         <NFormItem v-if="formValue.limitIp" :label="$t('page.firewallPolicy.partialIp')" path="ip">
           <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.ip" />
+            <NInput
+              v-model:value="formValue.ip"
+              type="textarea"
+              :autosize="{
+                minRows: 1,
+                maxRows: 5
+              }"
+            />
             <span class="mb-30px mt-10px font-size-14px text-truegray-400">
               {{ $t('page.firewallPolicy.ipTip') }}
             </span>

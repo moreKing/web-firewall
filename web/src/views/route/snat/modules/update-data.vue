@@ -201,7 +201,14 @@ function selectEth(_value: any, v2: any) {
 
         <NFormItem v-if="!formValue.sipAny" label=" " path="sip">
           <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.sip" />
+            <NInput
+              v-model:value="formValue.sip"
+              type="textarea"
+              :autosize="{
+                minRows: 1,
+                maxRows: 5
+              }"
+            />
             <span class="mb-30px mt-10px font-size-14px text-truegray-400">
               {{ $t('page.firewallPolicy.ipTip') }}
             </span>
@@ -223,7 +230,14 @@ function selectEth(_value: any, v2: any) {
 
         <NFormItem v-if="!formValue.dipAny" label=" " path="dip">
           <NSpace vertical :size="14" class="w-full">
-            <NInput v-model:value="formValue.dip" />
+            <NInput
+              v-model:value="formValue.dip"
+              type="textarea"
+              :autosize="{
+                minRows: 1,
+                maxRows: 5
+              }"
+            />
             <span class="mb-30px mt-10px font-size-14px text-truegray-400">
               {{ $t('page.firewallPolicy.ipTip') }}
             </span>
