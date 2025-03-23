@@ -318,6 +318,11 @@ func (i *Iptables) Flush(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	// 允许已建立的tcp连接通过
+	// -A m_input -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+	tmp.Filter.Rule = append(tmp.Filter.Rule, fmt.Sprintf("-A %s %s", ChainName[FORWARD], "-m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"))
+
 	for _, input := range forwardList {
 		//  判断协议类型
 		if input.Protocol == "tcp" || input.Protocol == "udp" {

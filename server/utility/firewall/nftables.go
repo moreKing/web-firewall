@@ -371,6 +371,9 @@ func (n *Nftables) Flush(ctx context.Context) error {
 		return err
 	}
 
+	// 允许已建立的tcp连接通过
+	ruleList = append(ruleList, fmt.Sprintf("add rule inet web-firewall %s %s", ChainName[FORWARD], "ct state vmap { established : accept, related : accept } accept"))
+
 	for _, item := range forwardList {
 		line := ""
 		if strings.TrimSpace(item.Sip) != "" {
