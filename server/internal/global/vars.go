@@ -17,7 +17,7 @@ var (
 
 	paths []OpenApi
 
-	regPath = regexp.MustCompile("^{[A-Za-z\\d-]+}$")
+	regPath = regexp.MustCompile(`^{[A-Za-z\d-]+}$`)
 )
 
 type OpenApi struct {
@@ -44,9 +44,9 @@ func init() {
 func GetApis() *[]ghttp.RouterItem {
 	if len(apis) == 0 {
 
-		LoginReg := regexp.MustCompile("^/api/v\\d+/login")
-		PublicReg := regexp.MustCompile("^/api/v\\d+/public/")
-		PrivateReg := regexp.MustCompile("^/api/v\\d+/")
+		LoginReg := regexp.MustCompile(`^/api/v\d+/login`)
+		PublicReg := regexp.MustCompile(`^/api/v\d+/public/`)
+		PrivateReg := regexp.MustCompile(`^/api/v\d+/`)
 		items := HttpServer.GetRoutes()
 		for _, item := range items {
 			if !(LoginReg.MatchString(item.Route) || PublicReg.MatchString(item.Route)) && PrivateReg.MatchString(item.Route) {
@@ -124,7 +124,7 @@ func GetPathName(path, method string) string {
 			continue
 		}
 		g.Log().Debug(context.TODO(), "api path: ", api.Path)
-		for i, _ := range tmpA {
+		for i := range tmpA {
 			if tmpA[i] == tmpB[i] {
 				continue
 			}
