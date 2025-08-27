@@ -3,9 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/gogf/gf/v2/net/ghttp"
-	"github.com/gogf/gf/v2/os/gcmd"
 	"net/http"
 	"os"
 	"regexp"
@@ -20,6 +17,10 @@ import (
 	"server/internal/global"
 	"server/internal/service"
 	"server/internal/vars"
+
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gcmd"
 )
 
 func register() func(ctx context.Context, parser *gcmd.Parser) (err error) {
@@ -58,7 +59,7 @@ func register() func(ctx context.Context, parser *gcmd.Parser) (err error) {
 				)
 
 				v1.Group("/", func(auth *ghttp.RouterGroup) {
-					auth.Middleware(service.Middleware().Auth) // 登录校验 没有登录不允许请求接口
+					// auth.Middleware(service.Middleware().Auth) // 登录校验 没有登录不允许请求接口
 
 					//注册登录后的公共接口
 					auth.Group("/public", func(pub *ghttp.RouterGroup) {
@@ -70,7 +71,7 @@ func register() func(ctx context.Context, parser *gcmd.Parser) (err error) {
 					// 暂时不使用rbac管理
 
 					auth.Group("/", func(private *ghttp.RouterGroup) {
-						private.Middleware(service.Middleware().ConfigLog)
+						// private.Middleware(service.Middleware().ConfigLog)
 
 						// firewall 策略管理
 						private.Group("/policy", func(u *ghttp.RouterGroup) {

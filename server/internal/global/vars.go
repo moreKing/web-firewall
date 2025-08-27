@@ -2,12 +2,12 @@ package global
 
 import (
 	"context"
-	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcfg"
-	"regexp"
-	"strings"
 )
 
 var (
@@ -112,10 +112,10 @@ func GetPaths() []OpenApi {
 }
 
 func GetPathName(path, method string) string {
-	g.Log().Debug(context.TODO(), fmt.Sprintf("path: %s method: %s", path, method))
+	// g.Log().Debug(context.TODO(), fmt.Sprintf("path: %s method: %s", path, method))
 	for _, api := range GetPaths() {
 		//g.Log().Debug(context.TODO(), api)
-		if strings.ToUpper(api.Method) != strings.ToUpper(method) {
+		if !strings.EqualFold(api.Method, method) {
 			continue
 		}
 		tmpA := strings.Split(api.Path, "/")

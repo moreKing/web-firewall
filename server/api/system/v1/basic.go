@@ -1,8 +1,9 @@
 package v1
 
 import (
-	"github.com/gogf/gf/v2/frame/g"
 	"server/internal/model"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 type GetWebConfigReq struct {
@@ -37,11 +38,17 @@ type GetEmailRes struct {
 
 type SetEmailReq struct {
 	g.Meta `path:"/email"  tags:"基本设置" method:"put" summary:"修改邮箱配置"`
-	*model.Email
+	*model.Email2
 }
 type SetEmailRes struct {
-	*model.Email
 }
+
+// type SetEmail2Req struct {
+// 	g.Meta `path:"/email"  tags:"基本设置" method:"put" summary:"修改邮箱配置"`
+// 	*model.Email2
+// }
+// type SetEmail2Res struct {
+// }
 
 type TestEmailReq struct {
 	g.Meta `path:"/email"  tags:"基本设置" method:"post" summary:"邮件测试"`

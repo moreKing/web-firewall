@@ -68,6 +68,16 @@ type Email struct {
 	Enable   bool   `json:"enable"`
 	SMTP     string `json:"smtp" v:"required-if:enable,true"` // smtp地址
 	Port     int    `json:"port" `
+	Email    string `json:"email" v:"required-if:enable,true"`
+	Account  string `json:"account" v:"required-if:enable,true"` // 发送邮件时显示的名称
+	Protocol int    `json:"protocol" v:"required-if:enable,true"`
+	Password string `json:"password"`
+}
+
+type Email2 struct {
+	Enable   bool   `json:"enable"`
+	SMTP     string `json:"smtp" v:"required-if:enable,true"` // smtp地址
+	Port     int    `json:"port" `
 	Email    string `json:"email" v:"required-if:enable,true|email"`
 	Account  string `json:"account" v:"required-if:enable,true"` // 发送邮件时显示的名称
 	Protocol int    `json:"protocol" v:"required-if:enable,true"`

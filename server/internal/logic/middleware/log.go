@@ -75,7 +75,7 @@ func (s *sMiddleware) ConfigLog(r *ghttp.Request) {
 func (s *sMiddleware) reMasking(body string) (req string) {
 	req = body
 	passwords := regMask.FindAllString(body, -1)
-	if passwords != nil && len(passwords) > 0 {
+	if len(passwords) == 0 {
 		for _, password := range passwords {
 			req = strings.ReplaceAll(req, password, string(regMaskContent.ReplaceAll([]byte(password), []byte(`:"***"`))))
 		}
